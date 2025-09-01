@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy App - Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+        
+        .message {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .homepage-container {
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .welcome-card h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-card p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-info h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .user-info p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pharmacy-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .btn-group .btn {
+            width: auto;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Form -->
+    <div id="loginForm" class="container">
+        <div class="header">
+            <h1>Welcome Back</h1>
+            <p>Sign in to your account</p>
+        </div>
+        
+        <div id="loginMessage"></div>
+        
+        <form id="loginFormElement">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+        
+        <div class="links">
+            <p>Don't have an account? <a onclick="showSignup()">Sign up here</a></p>
+        </div>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signupForm" class="container hidden">
+        <div class="header">
+            <h1>Create Account</h1>
+            <p>Join our pharmacy platform</p>
+        </div>
+        
+        <div id="signupMessage"></div>
+        
+        <form id="signupFormElement">
+            <div class="form-group">
+                <label for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="signupPassword1">Password</label>
+                <input type="password" id="signupPassword1" name="password1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="signupPassword2">Confirm Password</label>
+                <input type="password" id="signupPassword2" name="password2" required>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="isPharmacy" name="is_pharmacy">
+                <label for="isPharmacy">Register as Pharmacy</label>
+            </div>
+            
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+        
+        <div class="links">
+            <p>Already have an account? <a onclick="showLogin()">Login here</a></p>
+        </div>
+    </div>
+
+    <!-- Homepage -->
+    <div id="homepage" class="container homepage-container hidden">
+        <div class="welcome-card">
+            <h1>Welcome to Pharmacy App</h1>
+            <p>Your trusted platform for pharmacy management</p>
+            
+            <div class="user-info">
+                <h3>Account Information</h3>
+                <p><strong>Username:</strong> <span id="userUsername"></span></p>
+                <p><strong>Account Type:</strong> <span id="userType"></span></p>
+                <p><strong>Member Since:</strong> <span id="userDate"></span></p>
+            </div>
+            
+            <div class="btn-group">
+                <button onclick="logout()" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/auth/api';
+        
+        // Show/Hide functions
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('homepage').classList.add('hidden');
+        }
+        
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('homepage').classList.add('hidden');
+        }
+        
+        function showHomepage() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('homepage').classList.remove('hidden');
+        }
+        
+        // Message display
+        function showMessage(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+        
+        // Login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('username', document.getElementById('loginUsername').value);
+            formData.append('password', document.getElementById('loginPassword').value);
+            
+            try {
+                const response = await fetch(`${API_BASE}/login/`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('loginMessage', data.message, 'success');
+                    document.getElementById('userUsername').textContent = data.user.username;
+                    document.getElementById('userType').innerHTML = data.user.is_pharmacy ? 
+                        '<span class="pharmacy-badge">Pharmacy</span>' : 
+                        '<span style="color: #666;">Regular User</span>';
+                    document.getElementById('userDate').textContent = new Date().toLocaleDateString();
+                    
+                    setTimeout(() => {
+                        showHomepage();
+                    }, 1000);
+                } else {
+                    showMessage('loginMessage', data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Network error. Please try again.', 'error');
+            }
+        });
+        
+        // Signup form submission
+        document.getElementById('signupFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password1 = document.getElementById('signupPassword1').value;
+            const password2 = document.getElementById('signupPassword2').value;
+            
+            if (password1 !== password2) {
+                showMessage('signupMessage', 'Passwords do not match.', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('username', document.getElementById('signupUsername').value);
+            formData.append('password1', password1);
+            formData.append('password2', password2);
+            formData.append('is_pharmacy', document.getElementById('isPharmacy').checked);
+            
+            try {
+                const response = await fetch(`${API_BASE}/signup/`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('signupMessage', data.message, 'success');
+                    document.getElementById('userUsername').textContent = data.user.username;
+                    document.getElementById('userType').innerHTML = data.user.is_pharmacy ? 
+                        '<span class="pharmacy-badge">Pharmacy</span>' : 
+                        '<span style="color: #666;">Regular User</span>';
+                    document.getElementById('userDate').textContent = new Date().toLocaleDateString();
+                    
+                    setTimeout(() => {
+                        showHomepage();
+                    }, 1000);
+                } else {
+                    showMessage('signupMessage', data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('signupMessage', 'Network error. Please try again.', 'error');
+            }
+        });
+        
+        // Logout function
+        function logout() {
+            // Clear any stored data
+            showLogin();
+            document.getElementById('loginFormElement').reset();
+            document.getElementById('signupFormElement').reset();
+        }
+        
+        // Initialize with login form
+        showLogin();
+    </script>
+</body>
+</html>

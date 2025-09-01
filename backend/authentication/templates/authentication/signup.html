@@ -1,0 +1,69 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Sign Up - Pharmacy App{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Create Account</h1>
+    <p>Join our pharmacy platform</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <div class="message error">
+            {{ form.username.errors.0 }}
+        </div>
+        {% endif %}
+        {% if form.username.help_text %}
+        <small style="color: #666; font-size: 0.8rem;">{{ form.username.help_text }}</small>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Password</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+        <div class="message error">
+            {{ form.password1.errors.0 }}
+        </div>
+        {% endif %}
+        {% if form.password1.help_text %}
+        <small style="color: #666; font-size: 0.8rem;">{{ form.password1.help_text }}</small>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+        <div class="message error">
+            {{ form.password2.errors.0 }}
+        </div>
+        {% endif %}
+        {% if form.password2.help_text %}
+        <small style="color: #666; font-size: 0.8rem;">{{ form.password2.help_text }}</small>
+        {% endif %}
+    </div>
+    
+    <div class="checkbox-group">
+        {{ form.is_pharmacy }}
+        <label for="{{ form.is_pharmacy.id_for_label }}" style="margin-bottom: 0;">
+            {{ form.is_pharmacy.label }}
+        </label>
+    </div>
+    {% if form.is_pharmacy.help_text %}
+    <small style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 1.5rem;">{{ form.is_pharmacy.help_text }}</small>
+    {% endif %}
+    
+    <button type="submit" class="btn">Create Account</button>
+</form>
+
+<div class="links">
+    <p>Already have an account? <a href="{% url 'authentication:login' %}">Login here</a></p>
+</div>
+{% endblock %}

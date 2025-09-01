@@ -1,0 +1,84 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Inventory Management - Pharmacy App{% endblock %}
+
+{% block container_class %}inventory-container{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>📦 Inventory Management</h1>
+    <p>Manage your pharmacy inventory</p>
+</div>
+
+<div class="inventory-actions">
+    <a href="{% url 'authentication:inventory_add' %}" class="btn">➕ Add New Item</a>
+</div>
+
+{% if inventory_items %}
+    <div class="inventory-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Expiry Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                <tr>
+                    <td>
+                        <div class="medicine-info">
+                            <strong>{{ item.medicine.name }}</strong>
+                            {% if item.medicine.generic_name %}
+                                <br><small>{{ item.medicine.generic_name }}</small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quantity {% if item.quantity <= 5 %}low-stock{% endif %}">
+                            {{ item.quantity }}
+                        </span>
+                    </td>
+                    <td>${{ item.price }}</td>
+                    <td>
+                        {% if item.is_available %}
+                            <span class="status-badge available">Available</span>
+                        {% else %}
+                            <span class="status-badge unavailable">Unavailable</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.expiry_date %}
+                            {{ item.expiry_date|date:"M d, Y" }}
+                        {% else %}
+                            <span class="text-muted">Not set</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'authentication:inventory_edit' item.pk %}" class="btn-small btn-secondary">Edit</a>
+                            <a href="{% url 'authentication:inventory_delete' item.pk %}" class="btn-small btn-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No inventory items yet</h3>
+        <p>Start by adding your first medicine to the inventory.</p>
+        <a href="{% url 'authentication:inventory_add' %}" class="btn">Add First Item</a>
+    </div>
+{% endif %}
+
+<div class="links">
+    <a href="{% url 'authentication:homepage' %}">← Back to Homepage</a>
+</div>
+{% endblock %}

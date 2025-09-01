@@ -1,0 +1,89 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Search Medicine - Pharmacy App{% endblock %}
+
+{% block container_class %}search-container{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>🔍 Search Medicine</h1>
+    <p>Find medicines in nearby pharmacies</p>
+</div>
+
+<form method="get" class="search-form">
+    <div class="form-group">
+        <label for="{{ form.medicine_name.id_for_label }}">Medicine Name</label>
+        {{ form.medicine_name }}
+        {% if form.medicine_name.errors %}
+        <div class="message error">
+            {{ form.medicine_name.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.max_distance.id_for_label }}">Maximum Distance (km)</label>
+        {{ form.max_distance }}
+        {% if form.max_distance.errors %}
+        <div class="message error">
+            {{ form.max_distance.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn">Search</button>
+</form>
+
+{% if search_results %}
+    <div class="search-results">
+        <h3>Found {{ search_results|length }} result{{ search_results|length|pluralize }}</h3>
+        
+        <div class="results-grid">
+            {% for result in search_results %}
+            <div class="result-card">
+                <div class="pharmacy-info">
+                    <h4>{{ result.pharmacy_location.name }}</h4>
+                    <p class="address">{{ result.pharmacy_location.address }}</p>
+                    <p class="distance">📍 {{ result.distance }} km away</p>
+                    {% if result.pharmacy_location.phone %}
+                        <p class="phone">📞 {{ result.pharmacy_location.phone }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="medicine-info">
+                    <h5>{{ result.medicine.name }}</h5>
+                    {% if result.medicine.generic_name %}
+                        <p class="generic-name">{{ result.medicine.generic_name }}</p>
+                    {% endif %}
+                    <p class="price">💰 {{ result.inventory_item.price }}</p>
+                    <p class="quantity">📦 Quantity: {{ result.inventory_item.quantity }}</p>
+                    {% if result.inventory_item.expiry_date %}
+                        <p class="expiry">📅 Expires: {{ result.inventory_item.expiry_date|date:"M d, Y" }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="tel:{{ result.pharmacy_location.phone|default:'#' }}" class="btn-small btn-secondary">Call Pharmacy</a>
+                    <a href="https://maps.google.com/?q={{ result.pharmacy_location.latitude }},{{ result.pharmacy_location.longitude }}" target="_blank" class="btn-small">Get Directions</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+{% elif form.medicine_name.value %}
+    <div class="no-results">
+        <div class="empty-icon">🔍</div>
+        <h3>No medicines found</h3>
+        <p>No pharmacies in your area have this medicine. Try:</p>
+        <ul>
+            <li>Checking the spelling of the medicine name</li>
+            <li>Increasing the search distance</li>
+            <li>Searching for a generic name</li>
+        </ul>
+    </div>
+{% endif %}
+
+<div class="links">
+    <a href="{% url 'authentication:homepage' %}">← Back to Homepage</a>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Homepage - Pharmacy App{% endblock %}
+
+{% block container_class %}homepage-container{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <h1>Welcome to Pharmacy App</h1>
+    <p>Your trusted platform for pharmacy management</p>
+    
+    <div class="user-info">
+        <h3>Account Information</h3>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Account Type:</strong> 
+            {% if user.is_pharmacy %}
+                <span class="pharmacy-badge">Pharmacy</span>
+            {% else %}
+                <span style="color: #666;">Regular User</span>
+            {% endif %}
+        </p>
+        <p><strong>Member Since:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+    </div>
+
+    {% if user.is_pharmacy %}
+        <!-- Pharmacy Dashboard -->
+        <div class="dashboard-section">
+            <h3>Pharmacy Dashboard</h3>
+            
+            <!-- Location Status -->
+            <div class="status-card">
+                <h4>📍 Location Status</h4>
+                {% if pharmacy_location %}
+                    <div class="status-success">
+                        <p><strong>Pharmacy:</strong> {{ pharmacy_location.name }}</p>
+                        <p><strong>Address:</strong> {{ pharmacy_location.address }}</p>
+                        <p><strong>Phone:</strong> {{ pharmacy_location.phone|default:"Not provided" }}</p>
+                        <p><strong>Coordinates:</strong> {{ pharmacy_location.latitude }}, {{ pharmacy_location.longitude }}</p>
+                    </div>
+                    <a href="{% url 'authentication:pharmacy_location' %}" class="btn btn-secondary">Update Location</a>
+                {% else %}
+                    <div class="status-warning">
+                        <p>⚠️ No location set. Please add your pharmacy location to start receiving orders.</p>
+                    </div>
+                    <a href="{% url 'authentication:pharmacy_location' %}" class="btn">Set Location</a>
+                {% endif %}
+            </div>
+
+            <!-- Inventory Summary -->
+            <div class="status-card">
+                <h4>📦 Inventory Summary</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ total_items }}</span>
+                        <span class="stat-label">Total Items</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ available_items }}</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'authentication:inventory_list' %}" class="btn">View Inventory</a>
+                    <a href="{% url 'authentication:inventory_add' %}" class="btn btn-secondary">Add Item</a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <div class="action-grid">
+                    <a href="{% url 'authentication:pharmacy_location' %}" class="action-card">
+                        <span class="action-icon">📍</span>
+                        <span class="action-text">Manage Location</span>
+                    </a>
+                    <a href="{% url 'authentication:inventory_list' %}" class="action-card">
+                        <span class="action-icon">📦</span>
+                        <span class="action-text">Manage Inventory</span>
+                    </a>
+                    <a href="{% url 'authentication:inventory_add' %}" class="action-card">
+                        <span class="action-icon">➕</span>
+                        <span class="action-text">Add Medicine</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Customer Dashboard -->
+        <div class="dashboard-section">
+            <h3>Customer Dashboard</h3>
+            
+            <!-- Location Status -->
+            <div class="status-card">
+                <h4>📍 Your Location</h4>
+                {% if customer_location %}
+                    <div class="status-success">
+                        <p><strong>Address:</strong> {{ customer_location.address }}</p>
+                        <p><strong>Coordinates:</strong> {{ customer_location.latitude }}, {{ customer_location.longitude }}</p>
+                    </div>
+                    <a href="{% url 'authentication:customer_location' %}" class="btn btn-secondary">Update Location</a>
+                {% else %}
+                    <div class="status-warning">
+                        <p>⚠️ No location set. Please set your location to search for nearby pharmacies.</p>
+                    </div>
+                    <a href="{% url 'authentication:customer_location' %}" class="btn">Set Location</a>
+                {% endif %}
+            </div>
+
+            <!-- Medicine Search -->
+            <div class="status-card">
+                <h4>🔍 Find Medicine</h4>
+                <p>Search for medicines in nearby pharmacies</p>
+                {% if customer_location %}
+                    <a href="{% url 'authentication:medicine_search' %}" class="btn">Search Medicine</a>
+                {% else %}
+                    <p class="text-muted">Set your location first to search for medicines</p>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <div class="action-grid">
+                    <a href="{% url 'authentication:customer_location' %}" class="action-card">
+                        <span class="action-icon">📍</span>
+                        <span class="action-text">Set Location</span>
+                    </a>
+                    <a href="{% url 'authentication:medicine_search' %}" class="action-card">
+                        <span class="action-icon">🔍</span>
+                        <span class="action-text">Search Medicine</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="btn-group">
+        <a href="{% url 'authentication:logout' %}" class="btn btn-secondary">Logout</a>
+    </div>
+</div>
+{% endblock %}

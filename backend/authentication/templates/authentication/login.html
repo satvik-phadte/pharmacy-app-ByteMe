@@ -1,0 +1,40 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Login - Pharmacy App{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Welcome Back</h1>
+    <p>Sign in to your account</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <div class="message error">
+            {{ form.username.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+        <div class="message error">
+            {{ form.password.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn">Sign In</button>
+</form>
+
+<div class="links">
+    <p>Don't have an account? <a href="{% url 'authentication:signup' %}">Sign up here</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}{{ title }} - Pharmacy App{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>{{ title }}</h1>
+    <p>{% if inventory_item %}Edit inventory item{% else %}Add new medicine to inventory{% endif %}</p>
+</div>
+
+<form method="post" id="inventoryForm">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="{{ form.medicine.id_for_label }}">Select Existing Medicine</label>
+        {{ form.medicine }}
+        {% if form.medicine.errors %}
+        <div class="message error">
+            {{ form.medicine.errors.0 }}
+        </div>
+        {% endif %}
+        <small class="text-muted">{{ form.medicine.help_text }}</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.new_medicine_name.id_for_label }}">{{ form.new_medicine_name.label }}</label>
+        {{ form.new_medicine_name }}
+        {% if form.new_medicine_name.errors %}
+        <div class="message error">
+            {{ form.new_medicine_name.errors.0 }}
+        </div>
+        {% endif %}
+        <small class="text-muted">{{ form.new_medicine_name.help_text }}</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.new_medicine_generic.id_for_label }}">{{ form.new_medicine_generic.label }}</label>
+        {{ form.new_medicine_generic }}
+        {% if form.new_medicine_generic.errors %}
+        <div class="message error">
+            {{ form.new_medicine_generic.errors.0 }}
+        </div>
+        {% endif %}
+        <small class="text-muted">{{ form.new_medicine_generic.help_text }}</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+        {{ form.quantity }}
+        {% if form.quantity.errors %}
+        <div class="message error">
+            {{ form.quantity.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.price.id_for_label }}">Price </label>
+        {{ form.price }}
+        {% if form.price.errors %}
+        <div class="message error">
+            {{ form.price.errors.0 }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="checkbox-group">
+        {{ form.is_available }}
+        <label for="{{ form.is_available.id_for_label }}" style="margin-bottom: 0;">
+            {{ form.is_available.label }}
+        </label>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
+        {{ form.expiry_date }}
+        {% if form.expiry_date.errors %}
+        <div class="message error">
+            {{ form.expiry_date.errors.0 }}
+        </div>
+        {% endif %}
+        <small class="text-muted">Optional: Set expiry date for the medicine</small>
+    </div>
+    
+    <div class="btn-group">
+        <button type="submit" class="btn">Save Item</button>
+        <a href="{% url 'authentication:inventory_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<div class="links">
+    <a href="{% url 'authentication:inventory_list' %}">← Back to Inventory</a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const medicineSelect = document.getElementById('{{ form.medicine.id_for_label }}');
+    const newMedicineName = document.getElementById('{{ form.new_medicine_name.id_for_label }}');
+    const newMedicineGeneric = document.getElementById('{{ form.new_medicine_generic.id_for_label }}');
+    
+    function toggleFields() {
+        if (medicineSelect.value) {
+            // Existing medicine selected
+            newMedicineName.parentElement.style.display = 'none';
+            newMedicineGeneric.parentElement.style.display = 'none';
+            newMedicineName.value = '';
+            newMedicineGeneric.value = '';
+        } else {
+            // No existing medicine selected, show new medicine fields
+            newMedicineName.parentElement.style.display = 'block';
+            newMedicineGeneric.parentElement.style.display = 'block';
+        }
+    }
+    
+    // Initial state
+    toggleFields();
+    
+    // Listen for changes
+    medicineSelect.addEventListener('change', toggleFields);
+    newMedicineName.addEventListener('input', function() {
+        if (this.value) {
+            medicineSelect.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}
