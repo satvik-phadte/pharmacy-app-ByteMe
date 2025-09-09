@@ -12,7 +12,7 @@
     <div class="item-details">
         <h3>{{ inventory_item.medicine.name }}</h3>
         <p><strong>Quantity:</strong> {{ inventory_item.quantity }}</p>
-        <p><strong>Price:</strong> ${{ inventory_item.price }}</p>
+        <p><strong>Price:</strong> {{ inventory_item.price }}</p>
         {% if inventory_item.expiry_date %}
             <p><strong>Expiry Date:</strong> {{ inventory_item.expiry_date|date:"M d, Y" }}</p>
         {% endif %}
