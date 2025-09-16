@@ -2,6 +2,13 @@
 
 A Django-based pharmacy management system that connects pharmacies with customers for medicine search and inventory management.
 
+##Contributors
+https://github.com/satvik-phadte.
+https://github.com/durgesh3113 
+https://github.com/Allen-ctrl-web. 
+https://github.com/PankajShahapurkar.
+https://github.com/AYUSH22032004
+
 ## Features
 
 ### For Pharmacies:
