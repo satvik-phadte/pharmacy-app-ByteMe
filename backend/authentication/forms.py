@@ -29,8 +29,13 @@ class PharmacyLocationForm(forms.ModelForm):
         model = PharmacyLocation
         fields = ['name', 'address', 'latitude', 'longitude', 'phone']
         widgets = {
-            'latitude': forms.NumberInput(attrs={'step': 'any', 'id': 'latitude'}),
-            'longitude': forms.NumberInput(attrs={'step': 'any', 'id': 'longitude'}),
+            'address': forms.Textarea(attrs={
+                'rows': 3, 
+                'readonly': True,
+                'placeholder': 'Address will be filled automatically when you select a location on the map'
+            }),
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
         }
 
 class MedicineForm(forms.ModelForm):
@@ -70,8 +75,13 @@ class CustomerLocationForm(forms.ModelForm):
         model = CustomerLocation
         fields = ['address', 'latitude', 'longitude']
         widgets = {
-            'latitude': forms.NumberInput(attrs={'step': 'any', 'id': 'customer_latitude'}),
-            'longitude': forms.NumberInput(attrs={'step': 'any', 'id': 'customer_longitude'}),
+            'address': forms.Textarea(attrs={
+                'rows': 3, 
+                'readonly': True,
+                'placeholder': 'Address will be filled automatically when you select a location on the map'
+            }),
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
         }
 
 class MedicineSearchForm(forms.Form):
