@@ -1,0 +1,250 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Bulk Medicine Upload - Pharmacy App{% endblock %}
+
+{% block container_class %}location-container{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>📂 Bulk Medicine Upload</h1>
+    <p>Upload an Excel file to add multiple medicines to your inventory</p>
+</div>
+
+<div class="upload-instructions">
+    <h3>📋 Excel File Format Instructions</h3>
+    <div class="instruction-card">
+        <h4>Required Columns (must be present):</h4>
+        <ul class="column-list required">
+            <li><strong>medicine_name</strong> - Name of the medicine (text)</li>
+            <li><strong>quantity</strong> - Available quantity (number, minimum 0)</li>
+            <li><strong>price</strong> - Price per unit (number, minimum 0)</li>
+        </ul>
+        
+        <h4>Optional Columns (can be included):</h4>
+        <ul class="column-list optional">
+            <li><strong>generic_name</strong> - Generic name of the medicine (text)</li>
+            <li><strong>description</strong> - Description of the medicine (text)</li>
+            <li><strong>category</strong> - Medicine category (text, default: "General")</li>
+            <li><strong>expiry_date</strong> - Expiry date (date format: YYYY-MM-DD or MM/DD/YYYY)</li>
+            <li><strong>is_available</strong> - Availability status (TRUE/FALSE, default: TRUE)</li>
+        </ul>
+    </div>
+    
+    <div class="example-section">
+        <h4>📄 Example Excel Format:</h4>
+        <div class="example-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>medicine_name</th>
+                        <th>quantity</th>
+                        <th>price</th>
+                        <th>generic_name</th>
+                        <th>category</th>
+                        <th>expiry_date</th>
+                        <th>is_available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Paracetamol 500mg</td>
+                        <td>100</td>
+                        <td>5.50</td>
+                        <td>Acetaminophen</td>
+                        <td>Pain Relief</td>
+                        <td>2025-12-31</td>
+                        <td>TRUE</td>
+                    </tr>
+                    <tr>
+                        <td>Aspirin 75mg</td>
+                        <td>50</td>
+                        <td>3.25</td>
+                        <td>Acetylsalicylic Acid</td>
+                        <td>Cardiovascular</td>
+                        <td>2026-06-15</td>
+                        <td>TRUE</td>
+                    </tr>
+                    <tr>
+                        <td>Vitamin C</td>
+                        <td>200</td>
+                        <td>12.00</td>
+                        <td>Ascorbic Acid</td>
+                        <td>Vitamins</td>
+                        <td>2025-09-30</td>
+                        <td>TRUE</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="important-notes">
+        <h4>⚠️ Important Notes:</h4>
+        <ul>
+            <li>Column names must match exactly (case-sensitive)</li>
+            <li>First row should contain column headers</li>
+            <li>File size limit: 5MB</li>
+            <li>Supported formats: .xlsx, .xls</li>
+            <li>Empty cells in optional columns will use default values</li>
+            <li>If a medicine already exists, it will update the inventory</li>
+            <li>Duplicate medicines in the same file will be processed only once</li>
+        </ul>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="upload-form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="{{ form.excel_file.id_for_label }}">{{ form.excel_file.label }}</label>
+        {{ form.excel_file }}
+        {% if form.excel_file.help_text %}
+            <small class="help-text">{{ form.excel_file.help_text }}</small>
+        {% endif %}
+        {% if form.excel_file.errors %}
+            <div class="error-messages">
+                {% for error in form.excel_file.errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="btn-group">
+        <button type="submit" class="btn">📤 Upload & Process</button>
+        <a href="{% url 'authentication:inventory_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+
+
+<style>
+.upload-instructions {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.instruction-card {
+    background: rgba(240, 248, 255, 0.8);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.column-list {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.column-list.required li {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+.column-list.optional li {
+    color: #1976d2;
+}
+
+.example-section {
+    margin: 1.5rem 0;
+}
+
+.example-table {
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.example-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.example-table th,
+.example-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.example-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: #333;
+}
+
+.example-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.important-notes {
+    background: rgba(255, 243, 224, 0.9);
+    border-left: 4px solid #ff9800;
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+}
+
+.important-notes ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.important-notes li {
+    margin: 0.5rem 0;
+    color: #e65100;
+}
+
+.upload-form {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.upload-form input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-form input[type="file"]:hover {
+    border-color: #764ba2;
+    background: rgba(118, 75, 162, 0.05);
+}
+
+.download-template {
+    background: rgba(232, 245, 233, 0.9);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.error-messages {
+    margin-top: 0.5rem;
+}
+
+.error-text {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+}
+
+.help-text {
+    color: #666;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}

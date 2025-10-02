@@ -95,3 +95,22 @@ class MedicineSearchForm(forms.Form):
         initial=10,
         help_text="Maximum distance in kilometers"
     )
+
+class BulkMedicineUploadForm(forms.Form):
+    excel_file = forms.FileField(
+        label="Excel File",
+        help_text="Upload an Excel file (.xlsx or .xls) with medicine details",
+        widget=forms.FileInput(attrs={
+            'accept': '.xlsx,.xls',
+            'class': 'form-control'
+        })
+    )
+    
+    def clean_excel_file(self):
+        file = self.cleaned_data.get('excel_file')
+        if file:
+            if not file.name.endswith(('.xlsx', '.xls')):
+                raise forms.ValidationError("Please upload a valid Excel file (.xlsx or .xls)")
+            if file.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError("File size must be less than 5MB")
+        return file

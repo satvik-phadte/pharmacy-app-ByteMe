@@ -12,6 +12,7 @@
 
 <div class="inventory-actions">
     <a href="{% url 'authentication:inventory_add' %}" class="btn">➕ Add New Item</a>
+    <a href="{% url 'authentication:bulk_medicine_upload' %}" class="btn btn-secondary">📂 Bulk Upload</a>
 </div>
 
 {% if inventory_items %}

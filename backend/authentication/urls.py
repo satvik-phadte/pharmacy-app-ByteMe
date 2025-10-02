@@ -14,6 +14,7 @@ urlpatterns = [
     path('pharmacy/location/', views.pharmacy_location_view, name='pharmacy_location'),
     path('pharmacy/inventory/', views.inventory_list_view, name='inventory_list'),
     path('pharmacy/inventory/add/', views.inventory_add_view, name='inventory_add'),
+    path('pharmacy/inventory/bulk-upload/', views.bulk_medicine_upload_view, name='bulk_medicine_upload'),
     path('pharmacy/inventory/<int:pk>/edit/', views.inventory_edit_view, name='inventory_edit'),
     path('pharmacy/inventory/<int:pk>/delete/', views.inventory_delete_view, name='inventory_delete'),
     

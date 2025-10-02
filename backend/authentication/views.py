@@ -6,7 +6,8 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .forms import (
     UserRegistrationForm, UserLoginForm, PharmacyLocationForm, 
-    MedicineForm, InventoryForm, CustomerLocationForm, MedicineSearchForm
+    MedicineForm, InventoryForm, CustomerLocationForm, MedicineSearchForm,
+    BulkMedicineUploadForm
 )
 from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation
 import math
@@ -414,3 +415,116 @@ def api_signup(request):
             }, status=400)
     
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+@login_required
+def bulk_medicine_upload_view(request):
+    """View for bulk uploading medicines via Excel file"""
+    if not request.user.is_pharmacy:
+        messages.error(request, 'Access denied. Pharmacy account required.')
+        return redirect('authentication:homepage')
+    
+    if request.method == 'POST':
+        form = BulkMedicineUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = form.cleaned_data['excel_file']
+            
+            try:
+                # Import pandas and openpyxl for Excel processing
+                import pandas as pd
+                
+                # Read Excel file
+                df = pd.read_excel(excel_file)
+                
+                # Validate required columns
+                required_columns = ['medicine_name', 'quantity', 'price']
+                optional_columns = ['generic_name', 'description', 'category', 'expiry_date', 'is_available']
+                
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                if missing_columns:
+                    messages.error(request, f'Missing required columns: {", ".join(missing_columns)}')
+                    return render(request, 'authentication/bulk_medicine_upload.html', {'form': form})
+                
+                # Process each row
+                created_medicines = 0
+                created_inventory = 0
+                errors = []
+                
+                for index, row in df.iterrows():
+                    try:
+                        # Create or get medicine
+                        medicine_name = str(row['medicine_name']).strip()
+                        generic_name = str(row.get('generic_name', '')).strip() if pd.notna(row.get('generic_name')) else ''
+                        description = str(row.get('description', '')).strip() if pd.notna(row.get('description')) else ''
+                        category = str(row.get('category', 'General')).strip() if pd.notna(row.get('category')) else 'General'
+                        
+                        if not medicine_name or medicine_name.lower() == 'nan':
+                            errors.append(f'Row {index + 2}: Medicine name is required')
+                            continue
+                        
+                        medicine, medicine_created = Medicine.objects.get_or_create(
+                            name=medicine_name,
+                            defaults={
+                                'generic_name': generic_name,
+                                'description': description,
+                                'category': category
+                            }
+                        )
+                        
+                        if medicine_created:
+                            created_medicines += 1
+                        
+                        # Create or update inventory
+                        quantity = int(row['quantity']) if pd.notna(row['quantity']) else 0
+                        price = float(row['price']) if pd.notna(row['price']) else 0.0
+                        is_available = bool(row.get('is_available', True)) if pd.notna(row.get('is_available')) else True
+                        expiry_date = pd.to_datetime(row['expiry_date']).date() if pd.notna(row.get('expiry_date')) else None
+                        
+                        if quantity < 0:
+                            errors.append(f'Row {index + 2}: Quantity cannot be negative')
+                            continue
+                        
+                        if price < 0:
+                            errors.append(f'Row {index + 2}: Price cannot be negative')
+                            continue
+                        
+                        inventory, inventory_created = Inventory.objects.update_or_create(
+                            pharmacy=request.user,
+                            medicine=medicine,
+                            defaults={
+                                'quantity': quantity,
+                                'price': price,
+                                'is_available': is_available,
+                                'expiry_date': expiry_date
+                            }
+                        )
+                        
+                        if inventory_created:
+                            created_inventory += 1
+                    
+                    except Exception as e:
+                        errors.append(f'Row {index + 2}: {str(e)}')
+                        continue
+                
+                # Show results
+                success_msg = f'Successfully processed: {created_medicines} new medicines, {created_inventory} inventory items'
+                messages.success(request, success_msg)
+                
+                if errors:
+                    error_msg = f'{len(errors)} errors occurred: ' + '; '.join(errors[:5])
+                    if len(errors) > 5:
+                        error_msg += f' and {len(errors) - 5} more...'
+                    messages.warning(request, error_msg)
+                
+                return redirect('authentication:inventory_list')
+                
+            except ImportError:
+                messages.error(request, 'Excel processing libraries not installed. Please install pandas and openpyxl.')
+                return render(request, 'authentication/bulk_medicine_upload.html', {'form': form})
+            
+            except Exception as e:
+                messages.error(request, f'Error processing file: {str(e)}')
+                return render(request, 'authentication/bulk_medicine_upload.html', {'form': form})
+    else:
+        form = BulkMedicineUploadForm()
+    
+    return render(request, 'authentication/bulk_medicine_upload.html', {'form': form})
