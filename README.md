@@ -13,16 +13,16 @@ https://github.com/AYUSH22032004
 ## Features
 
 ### For Pharmacies:
-- 📍 **Location Management**: Set pharmacy location with coordinates
-- 📦 **Inventory Management**: Add, edit, and delete medicine inventory
-- 💊 **Medicine Creation**: Create new medicines on the fly
-- 📊 **Dashboard**: View inventory statistics and status
+- **Location Management**: Set pharmacy location with coordinates
+-  **Inventory Management**: Add, edit, and delete medicine inventory
+-  **Medicine Creation**: Create new medicines on the fly
+-  **Dashboard**: View inventory statistics and status
 
 ### For Customers:
-- 📍 **Location Setting**: Set your location to find nearby pharmacies
-- 🔍 **Medicine Search**: Search for medicines within a specified distance
-- 📱 **Contact Information**: Get pharmacy contact details and directions
-- 🗺️ **Distance Calculation**: See how far each pharmacy is from your location
+-  **Location Setting**: Set your location to find nearby pharmacies
+-  **Medicine Search**: Search for medicines within a specified distance
+-  **Contact Information**: Get pharmacy contact details and directions
+-  **Distance Calculation**: See how far each pharmacy is from your location
 
 ## Technology Stack
 
