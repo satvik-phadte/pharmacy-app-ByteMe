@@ -1,4 +1,6 @@
 {% extends 'authentication/base.html' %}
+{% load webpush_notifications %}
+{% load static %}
 
 {% block title %}Homepage - Pharmacy App{% endblock %}
 
@@ -20,6 +22,14 @@
             {% endif %}
         </p>
         <p><strong>Member Since:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+        
+        <!-- Browser Notification Controls (Compact) -->
+        <div style="margin-top: 0.75rem; padding: 0.5rem; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem;">
+            <span id="notification-status" style="color: #666;"> Browser Notifications: </span>
+            <button id="enable-notifications-btn" class="btn-small-plain" style="background:#667eea; font-size: 0.85rem; padding: 0.3rem 0.6rem;" onclick="enableNotifications()">Enable</button>
+            <button id="disable-notifications-btn" class="btn-small-plain" style="background:#6c757d; font-size: 0.85rem; padding: 0.3rem 0.6rem; display:none;" onclick="disableNotifications()">Disable</button>
+            <button id="test-notification-btn" class="btn-small-plain" style="background:#28a745; font-size: 0.85rem; padding: 0.3rem 0.6rem; display:none;" onclick="sendTestNotification()">Test</button>
+        </div>
     </div>
 
     {% if user.is_pharmacy %}
@@ -228,4 +238,107 @@
         <a href="{% url 'authentication:logout' %}" class="btn btn-secondary">Logout</a>
     </div>
 </div>
+
+<!-- Load Push Notification Scripts -->
+<script src="{% static 'authentication/push-notifications.js' %}"></script>
+<script>
+    // Initialize push notifications
+    const vapidPublicKey = "{{ WEBPUSH_SETTINGS.VAPID_PUBLIC_KEY }}";
+    pushNotification.init(vapidPublicKey);
+
+    function enableNotifications() {
+        pushNotification.requestPermission()
+            .then(() => {
+                // UI updated automatically by pushNotification.updateUI()
+            })
+            .catch(error => {
+                console.error('Failed to enable notifications:', error);
+                alert('Failed to enable notifications. Please check your browser settings.');
+            });
+    }
+
+    function disableNotifications() {
+        pushNotification.unsubscribe()
+            .then(() => {
+                // UI updated automatically by pushNotification.updateUI()
+            })
+            .catch(error => {
+                console.error('Failed to disable notifications:', error);
+                alert('Failed to disable notifications.');
+            });
+    }
+
+    function sendTestNotification() {
+        fetch('{% url "authentication:send_test_notification" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Test notification sent! Check your notifications.');
+            } else {
+                alert('Failed to send test notification: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error sending test notification:', error);
+            alert('Failed to send test notification');
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Show test button if notifications are already enabled
+    navigator.serviceWorker.ready.then(registration => {
+        registration.pushManager.getSubscription().then(subscription => {
+            if (subscription) {
+                document.getElementById('test-notification-btn').style.display = 'inline-block';
+            }
+        });
+    });
+</script>
+
+<style>
+    .notification-controls {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    .notification-controls h4,
+    .notification-controls p {
+        color: white;
+    }
+    .notification-status {
+        font-weight: bold;
+        padding: 0.5rem;
+        border-radius: 6px;
+        margin: 0.5rem 0;
+        display: inline-block;
+    }
+    .notification-status.enabled {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    .notification-status.disabled {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+</style>
 {% endblock %}

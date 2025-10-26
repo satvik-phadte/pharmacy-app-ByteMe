@@ -17,18 +17,21 @@ https://github.com/AYUSH22032004
 -  **Inventory Management**: Add, edit, and delete medicine inventory
 -  **Medicine Creation**: Create new medicines on the fly
 -  **Dashboard**: View inventory statistics and status
+ -  **Alerts**: Low stock and expiry warnings (in dashboard and via optional browser push notifications)
 
 ### For Customers:
 -  **Location Setting**: Set your location to find nearby pharmacies
 -  **Medicine Search**: Search for medicines within a specified distance
 -  **Contact Information**: Get pharmacy contact details and directions
 -  **Distance Calculation**: See how far each pharmacy is from your location
+ -  **Reminders**: Create medicine reminders and get in-app/browser notifications
 
 ## Technology Stack
 
 - **Backend**: Django 5.2.5
 - **Database**: SQLite (default)
 - **Frontend**: HTML, CSS, JavaScript
+- **Notifications**: Web Push (django-webpush + Service Worker)
 - **Authentication**: Django's built-in authentication system
 
 ## Project Structure
@@ -81,12 +84,18 @@ source venv/bin/activate
 ```bash
 cd backend
 pip install django
+pip install django-webpush py-vapid  # for browser push notifications
 ```
 
 ### Step 4: Run Database Migrations
 ```bash
 python manage.py makemigrations
 python manage.py migrate
+```
+
+Optional (recommended when using the service worker):
+```bash
+python manage.py collectstatic --noinput
 ```
 
 ### Step 5: Create Superuser (Optional)
@@ -109,12 +118,14 @@ Open your browser and go to: `http://localhost:8000`
 2. **Set Location**: Go to "Set Pharmacy Location" and enter your coordinates
 3. **Manage Inventory**: Add medicines to your inventory with quantities and prices
 4. **Monitor**: View your inventory status and statistics on the dashboard
+5. **Enable Notifications (optional)**: Toggle browser notifications from the homepage to receive low-stock and expiry alerts
 
 ### For Customers:
 1. **Register/Login**: Create a regular customer account
 2. **Set Location**: Enter your location coordinates
 3. **Search Medicines**: Search for specific medicines within your area
 4. **Find Pharmacies**: View nearby pharmacies with the medicine you need
+5. **Reminders**: Add reminders and (optionally) enable browser notifications from the homepage
 
 ## Database Models
 
@@ -133,10 +144,19 @@ Open your browser and go to: `http://localhost:8000`
 ### Inventory
 - Links pharmacies with medicines
 - Fields: pharmacy, medicine, quantity, price, is_available, expiry_date
+- Computed flags: low stock (<=5), expiring soon (within 30 days), expired
 
 ### CustomerLocation
 - Stores customer location for distance calculations
 - Fields: user, address, latitude, longitude
+
+### Reminder
+- Stores user-configured medicine reminders
+- Fields: user, medicine_name, times (comma-separated, 24h), notes, active
+
+### ReminderLog
+- Tracks daily adherence for reminders
+- Fields: reminder, date, taken, marked_at
 
 ## API Endpoints
 
@@ -152,6 +172,7 @@ Open your browser and go to: `http://localhost:8000`
 - `GET /auth/pharmacy/inventory/` - Inventory management
 - `GET /auth/customer/location/` - Customer location setting
 - `GET /auth/customer/search/` - Medicine search
+- `POST /auth/send-test-notification/` - Send a test push notification to current user (after enabling notifications)
 
 ## Features in Detail
 
@@ -162,13 +183,74 @@ The app uses the Haversine formula to calculate distances between customer and p
 - Add new medicines with automatic creation in the database
 - Track quantities, prices, and expiry dates
 - Set availability status
-- View low stock warnings
+- View low stock warnings and expiry alerts
 
 ### Search Functionality
 - Search by medicine name
 - Filter by maximum distance
 - Display pharmacy contact information
 - Provide directions via Google Maps
+- Hide expiry info in customer search results for a cleaner UX
+
+### Reminders & Notifications
+- Create/manage reminders with multiple times per day
+- Mark as taken (per day)
+- Optional browser push notifications (desktop/mobile) for:
+   - Customer reminders
+   - Pharmacy low-stock and expiry alerts
+
+## Browser Push Notifications (Web Push)
+
+Browser notifications are implemented using Service Workers and django-webpush. In development they work on http://127.0.0.1, and in production require HTTPS.
+
+### 1) Dependencies
+```bash
+pip install django-webpush py-vapid
+```
+
+### 2) Generate VAPID Keys
+We include a helper script:
+```bash
+cd backend
+python generate_vapid_keys.py
+```
+Copy the printed VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY to your environment (recommended) or settings for a quick start.
+
+### 3) Configure Django
+- In `pharmacy_backend/settings.py`:
+   - Add to INSTALLED_APPS: `webpush`
+   - Add WEBPUSH_SETTINGS (use env in production):
+      ```python
+      WEBPUSH_SETTINGS = {
+            "VAPID_PUBLIC_KEY": "<public>",
+            "VAPID_PRIVATE_KEY": "<private>",
+            "VAPID_ADMIN_EMAIL": "mailto:admin@pharmacy-app.com",
+      }
+      ```
+- In `pharmacy_backend/urls.py` add:
+   ```python
+   path('webpush/', include('webpush.urls')),
+   ```
+- Static for service worker:
+   ```python
+   STATIC_URL = 'static/'
+   STATIC_ROOT = BASE_DIR / 'staticfiles'
+   ```
+
+### 4) Migrations & static
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+### 5) Try it
+- Open `/auth/homepage/`
+- Click Enable (allow browser permission)
+- Click Test to receive a notification
+
+### Notes
+- Use environment variables for VAPID keys in production (do not commit private keys)
+- Service workers require HTTPS in production
 
 ## Security Features
 
@@ -203,10 +285,17 @@ The app uses custom CSS for a modern, responsive design. Styles are defined in t
 2. **Static Files Not Loading**
    - Ensure `django.contrib.staticfiles` is in `INSTALLED_APPS`
    - Run `python manage.py collectstatic` if needed
+   - Ensure `STATIC_ROOT` is set in settings if you use `collectstatic`
 
 3. **Permission Errors**
    - Make sure you're logged in as a pharmacy user for pharmacy features
    - Check user permissions in Django admin
+
+4. **Push Notifications Not Working**
+   - Verify browser permission is granted
+   - Ensure service worker is registered (DevTools > Application)
+   - Confirm VAPID keys are set and valid
+   - For production, ensure the site runs over HTTPS
 
 ## Contributing
 

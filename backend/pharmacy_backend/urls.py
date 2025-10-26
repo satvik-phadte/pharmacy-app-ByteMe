@@ -21,5 +21,6 @@ from django.shortcuts import redirect
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),
+    path('webpush/', include('webpush.urls')),
     path('', lambda request: redirect('authentication:login'), name='root'),
 ]

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'webpush',
     'authentication',
 ]
 
@@ -118,6 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -126,3 +128,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.User'
+
+# Web Push Notifications Configuration
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BEslFTV6-QBmJ6OLeZrU5tTKga3IeihuJqKCvjFx-bFb9omexivabcxlD9Wom7gBC5k3mUdTPFqXlgv909LjZzM",
+    "VAPID_PRIVATE_KEY": "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ3YvcFc3VkJlMGxvZVI0VlIKMDRsQ3ZJZEk3WHBDSTJUODZxVkozcUpTOCt1aFJBTkNBQVJMSlJVMWV2a0FaaWVqaTNtYTFPYlV5b0d0eUhvbwpiaWFpZ3I0eGNmbXhXL2FKbnNZcjJtM01aUS9WcUp1NEFRdVpONWxIVXp4YWw1WUwvZFBTNDJjegotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg",
+    "VAPID_ADMIN_EMAIL": "mailto:admin@pharmacy-app.com"
+}
