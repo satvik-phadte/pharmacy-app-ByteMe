@@ -44,6 +44,10 @@
                         <p><strong>Times:</strong> {{ r.times }}</p>
                         {% if r.notes %}<p><strong>Notes:</strong> {{ r.notes }}</p>{% endif %}
                         <p><strong>Status:</strong> {{ r.active|yesno:"Active,Inactive" }}</p>
+                        <form method="post" action="{% url 'authentication:reminder_delete' r.pk %}" style="margin-top: .5rem;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this reminder?');">Delete</button>
+                        </form>
                     </div>
                 </div>
                 {% endfor %}

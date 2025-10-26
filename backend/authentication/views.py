@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
+from webpush import send_user_notification
 from .forms import (
     UserRegistrationForm, UserLoginForm, PharmacyLocationForm, 
     MedicineForm, InventoryForm, CustomerLocationForm, MedicineSearchForm,
@@ -588,3 +589,99 @@ def reminder_mark_taken_today(request, pk):
     log.taken = True
     log.save()
     return JsonResponse({'success': True})
+
+
+@login_required
+def reminder_delete_view(request, pk):
+    """Delete a reminder owned by the current (non-pharmacy) user."""
+    if request.user.is_pharmacy:
+        messages.error(request, 'This feature is for customers only.')
+        return redirect('authentication:homepage')
+
+    reminder = get_object_or_404(Reminder, pk=pk, user=request.user)
+    if request.method == 'POST':
+        reminder.delete()
+        messages.success(request, 'Reminder deleted.')
+        return redirect('authentication:reminders')
+
+    # For non-POST, just redirect back to reminders (avoid accidental deletions via GET)
+    messages.info(request, 'Deletion cancelled.')
+    return redirect('authentication:reminders')
+
+
+# --- Push Notification Helpers ---
+def send_push_notification(user, title, body, url='/'):
+    """Helper function to send push notification to a user"""
+    try:
+        payload = {
+            'head': title,
+            'body': body,
+            'icon': '/static/authentication/icon.png',
+            'url': url
+        }
+        send_user_notification(user=user, payload=payload, ttl=1000)
+        return True
+    except Exception as e:
+        print(f'Failed to send notification to {user.username}: {e}')
+        return False
+
+
+@login_required
+def send_test_notification(request):
+    """Send a test notification to the current user"""
+    if request.method == 'POST':
+        success = send_push_notification(
+            user=request.user,
+            title='Test Notification',
+            body='This is a test notification from Pharmacy App!',
+            url='/auth/homepage/'
+        )
+        if success:
+            return JsonResponse({'success': True, 'message': 'Test notification sent!'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Failed to send notification'}, status=500)
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+
+def notify_low_stock_items(pharmacy_user):
+    """Send notification for low stock items to pharmacy"""
+    inventory_items = Inventory.objects.filter(pharmacy=pharmacy_user)
+    low_stock_items = [item for item in inventory_items if item.is_low_stock]
+    
+    if low_stock_items:
+        item_names = ', '.join([item.medicine.name for item in low_stock_items[:3]])
+        more = f' and {len(low_stock_items) - 3} more' if len(low_stock_items) > 3 else ''
+        
+        send_push_notification(
+            user=pharmacy_user,
+            title='⚠️ Low Stock Alert',
+            body=f'Low stock: {item_names}{more}',
+            url='/auth/pharmacy/inventory/'
+        )
+
+
+def notify_expiring_items(pharmacy_user):
+    """Send notification for expiring items to pharmacy"""
+    inventory_items = Inventory.objects.filter(pharmacy=pharmacy_user)
+    expiring_items = [item for item in inventory_items if item.is_expiring_soon and not item.is_expired]
+    
+    if expiring_items:
+        item_names = ', '.join([item.medicine.name for item in expiring_items[:3]])
+        more = f' and {len(expiring_items) - 3} more' if len(expiring_items) > 3 else ''
+        
+        send_push_notification(
+            user=pharmacy_user,
+            title='⏰ Expiry Warning',
+            body=f'Expiring soon: {item_names}{more}',
+            url='/auth/pharmacy/inventory/'
+        )
+
+
+def notify_medicine_reminder(user, reminder):
+    """Send notification for medicine reminder to customer"""
+    send_push_notification(
+        user=user,
+        title=f'💊 Medicine Reminder',
+        body=f'Time to take your medicine: {reminder.medicine_name}',
+        url='/auth/homepage/'
+    )

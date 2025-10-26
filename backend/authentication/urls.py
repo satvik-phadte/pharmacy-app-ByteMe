@@ -23,6 +23,10 @@ urlpatterns = [
     path('customer/search/', views.medicine_search_view, name='medicine_search'),
     path('customer/reminders/', views.reminders_view, name='reminders'),
     path('customer/reminders/<int:pk>/mark-taken/', views.reminder_mark_taken_today, name='reminder_mark_taken'),
+    path('customer/reminders/<int:pk>/delete/', views.reminder_delete_view, name='reminder_delete'),
+    
+    # Notification routes
+    path('send-test-notification/', views.send_test_notification, name='send_test_notification'),
     
     # API routes (no CORS)
     path('api/login/', views.api_login, name='api_login'),
