@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(AbstractUser):
     is_pharmacy = models.BooleanField(default=False, verbose_name="Pharmacy Account")
+    phone_number = models.CharField(max_length=15, blank=True, help_text="Contact phone number")
     
     def __str__(self):
         return self.username
@@ -48,6 +49,22 @@ class Inventory(models.Model):
     def __str__(self):
         return f"{self.medicine.name} - {self.pharmacy.username} - Qty: {self.quantity}"
     
+    @property
+    def is_low_stock(self):
+        return self.quantity <= 5
+
+    @property
+    def is_expiring_soon(self):
+        from datetime import date, timedelta
+        if self.expiry_date:
+            return self.expiry_date <= date.today() + timedelta(days=30)
+        return False
+
+    @property
+    def is_expired(self):
+        from datetime import date
+        return self.expiry_date and self.expiry_date < date.today()
+
     class Meta:
         unique_together = ['pharmacy', 'medicine']
 

@@ -44,7 +44,7 @@
                 <div class="pharmacy-info">
                     <h4>{{ result.pharmacy_location.name }}</h4>
                     <p class="address">{{ result.pharmacy_location.address }}</p>
-                    <p class="distance">📍 {{ result.distance }} km away</p>
+                    <p class="distance"> {{ result.distance }} km away</p>
                     {% if result.pharmacy_location.phone %}
                         <p class="phone">📞 {{ result.pharmacy_location.phone }}</p>
                     {% endif %}
@@ -63,7 +63,6 @@
                 </div>
                 
                 <div class="action-buttons">
-                    <a href="tel:{{ result.pharmacy_location.phone|default:'#' }}" class="btn-small btn-secondary">Call Pharmacy</a>
                     <a href="https://maps.google.com/?q={{ result.pharmacy_location.latitude }},{{ result.pharmacy_location.longitude }}" target="_blank" class="btn-small">Get Directions</a>
                 </div>
             </div>

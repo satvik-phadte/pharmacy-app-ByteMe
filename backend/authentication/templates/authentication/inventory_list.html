@@ -16,6 +16,40 @@
 </div>
 
 {% if inventory_items %}
+    {% if low_stock_items or expiring_soon_items or expired_items %}
+        <div class="messages">
+            {% if low_stock_items %}
+                <div class="message error">
+                    <strong>Low Stock Alert:</strong> The following medicines are low on stock:
+                    <ul>
+                        {% for item in low_stock_items %}
+                        <li>{{ item.medicine.name }} ({{ item.quantity }} left)</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if expiring_soon_items %}
+                <div class="message warning">
+                    <strong>Expiry Warning:</strong> The following medicines will expire soon:
+                    <ul>
+                        {% for item in expiring_soon_items %}
+                        <li>{{ item.medicine.name }} (expires {{ item.expiry_date|date:"M d, Y" }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if expired_items %}
+                <div class="message error">
+                    <strong>Expired:</strong> The following medicines have expired:
+                    <ul>
+                        {% for item in expired_items %}
+                        <li>{{ item.medicine.name }} (expired {{ item.expiry_date|date:"M d, Y" }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
     <div class="inventory-table">
         <table>
             <thead>
@@ -40,7 +74,7 @@
                         </div>
                     </td>
                     <td>
-                        <span class="quantity {% if item.quantity <= 5 %}low-stock{% endif %}">
+                        <span class="quantity {% if item.is_low_stock %}low-stock{% endif %}">
                             {{ item.quantity }}
                         </span>
                     </td>
@@ -55,6 +89,7 @@
                     <td>
                         {% if item.expiry_date %}
                             {{ item.expiry_date|date:"M d, Y" }}
+                            {% if item.is_expired %}<span style="color:#dc3545; font-weight:bold;"> (Expired)</span>{% elif item.is_expiring_soon %}<span style="color:#ff9800; font-weight:bold;"> (Expiring Soon)</span>{% endif %}
                         {% else %}
                             <span class="text-muted">Not set</span>
                         {% endif %}

@@ -3,6 +3,13 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder
 
 class UserRegistrationForm(UserCreationForm):
+    phone_number = forms.CharField(
+        max_length=15,
+        required=False,
+        label="Phone Number",
+        help_text="Optional: Your contact phone number",
+        widget=forms.TextInput(attrs={'placeholder': 'e.g., +1234567890'})
+    )
     is_pharmacy = forms.BooleanField(
         required=False,
         label="Register as Pharmacy",
@@ -11,7 +18,7 @@ class UserRegistrationForm(UserCreationForm):
     
     class Meta:
         model = User
-        fields = ('username', 'password1', 'password2', 'is_pharmacy')
+        fields = ('username', 'phone_number', 'password1', 'password2', 'is_pharmacy')
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

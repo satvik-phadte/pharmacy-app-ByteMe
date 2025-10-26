@@ -63,7 +63,7 @@ def homepage_view(request):
         'user': request.user,
         'is_pharmacy': request.user.is_pharmacy
     }
-    
+
     if request.user.is_pharmacy:
         # Get pharmacy location and inventory
         try:
@@ -71,7 +71,7 @@ def homepage_view(request):
             context['pharmacy_location'] = pharmacy_location
         except PharmacyLocation.DoesNotExist:
             context['pharmacy_location'] = None
-            
+
         inventory_items = Inventory.objects.filter(pharmacy=request.user)
         context['inventory_items'] = inventory_items
         context['total_items'] = inventory_items.count()
@@ -89,10 +89,10 @@ def homepage_view(request):
         # Build 'taken today' map
         from datetime import date
         today = date.today()
-    taken_ids = [log.reminder_id for log in ReminderLog.objects.filter(reminder__in=reminders, date=today, taken=True)]
-    context['reminders'] = reminders
-    context['reminders_taken_today_ids'] = taken_ids
-    
+        taken_ids = [log.reminder_id for log in ReminderLog.objects.filter(reminder__in=reminders, date=today, taken=True)]
+        context['reminders'] = reminders
+        context['reminders_taken_today_ids'] = taken_ids
+
     return render(request, 'authentication/homepage.html', context)
 
 # Pharmacy Location Management
@@ -131,9 +131,17 @@ def inventory_list_view(request):
         return redirect('authentication:homepage')
     
     inventory_items = Inventory.objects.filter(pharmacy=request.user).select_related('medicine')
-    
+
+    # Gather low stock and expiry warnings
+    low_stock_items = [item for item in inventory_items if item.is_low_stock]
+    expiring_soon_items = [item for item in inventory_items if item.is_expiring_soon and not item.is_expired]
+    expired_items = [item for item in inventory_items if item.is_expired]
+
     return render(request, 'authentication/inventory_list.html', {
-        'inventory_items': inventory_items
+        'inventory_items': inventory_items,
+        'low_stock_items': low_stock_items,
+        'expiring_soon_items': expiring_soon_items,
+        'expired_items': expired_items,
     })
 
 @login_required
