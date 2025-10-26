@@ -22,17 +22,13 @@
             {% endif %}
         </p>
         <p><strong>Member Since:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
-    </div>
-
-    <!-- Browser Notification Controls -->
-    <div class="status-card notification-controls">
-        <h4>🔔 Browser Notifications</h4>
-        <p>Get instant alerts for reminders, low stock, and expiry warnings</p>
-        <p id="notification-status" class="notification-status disabled">✗ Notifications Disabled</p>
-        <div class="btn-group">
-            <button id="enable-notifications-btn" class="btn" onclick="enableNotifications()">Enable Notifications</button>
-            <button id="disable-notifications-btn" class="btn btn-secondary" style="display:none;" onclick="disableNotifications()">Disable Notifications</button>
-            <button id="test-notification-btn" class="btn btn-secondary" style="display:none;" onclick="sendTestNotification()">Send Test</button>
+        
+        <!-- Browser Notification Controls (Compact) -->
+        <div style="margin-top: 0.75rem; padding: 0.5rem; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem;">
+            <span id="notification-status" style="color: #666;">🔔 Browser Notifications: </span>
+            <button id="enable-notifications-btn" class="btn-small-plain" style="background:#667eea; font-size: 0.85rem; padding: 0.3rem 0.6rem;" onclick="enableNotifications()">Enable</button>
+            <button id="disable-notifications-btn" class="btn-small-plain" style="background:#6c757d; font-size: 0.85rem; padding: 0.3rem 0.6rem; display:none;" onclick="disableNotifications()">Disable</button>
+            <button id="test-notification-btn" class="btn-small-plain" style="background:#28a745; font-size: 0.85rem; padding: 0.3rem 0.6rem; display:none;" onclick="sendTestNotification()">Test</button>
         </div>
     </div>
 
@@ -253,8 +249,7 @@
     function enableNotifications() {
         pushNotification.requestPermission()
             .then(() => {
-                alert('Notifications enabled successfully!');
-                document.getElementById('test-notification-btn').style.display = 'inline-block';
+                // UI updated automatically by pushNotification.updateUI()
             })
             .catch(error => {
                 console.error('Failed to enable notifications:', error);
@@ -265,8 +260,7 @@
     function disableNotifications() {
         pushNotification.unsubscribe()
             .then(() => {
-                alert('Notifications disabled successfully!');
-                document.getElementById('test-notification-btn').style.display = 'none';
+                // UI updated automatically by pushNotification.updateUI()
             })
             .catch(error => {
                 console.error('Failed to disable notifications:', error);

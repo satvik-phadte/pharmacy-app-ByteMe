@@ -165,19 +165,20 @@ const pushNotification = {
     updateUI: function(isSubscribed) {
         const enableBtn = document.getElementById('enable-notifications-btn');
         const disableBtn = document.getElementById('disable-notifications-btn');
+        const testBtn = document.getElementById('test-notification-btn');
         const status = document.getElementById('notification-status');
 
         if (enableBtn && disableBtn && status) {
             if (isSubscribed) {
                 enableBtn.style.display = 'none';
                 disableBtn.style.display = 'inline-block';
-                status.textContent = '✓ Notifications Enabled';
-                status.className = 'notification-status enabled';
+                if (testBtn) testBtn.style.display = 'inline-block';
+                status.innerHTML = '🔔 Browser Notifications: <span style="color:#28a745; font-weight:600;">Enabled</span>';
             } else {
                 enableBtn.style.display = 'inline-block';
                 disableBtn.style.display = 'none';
-                status.textContent = '✗ Notifications Disabled';
-                status.className = 'notification-status disabled';
+                if (testBtn) testBtn.style.display = 'none';
+                status.innerHTML = '🔔 Browser Notifications: <span style="color:#666;">Disabled</span>';
             }
         }
     },
