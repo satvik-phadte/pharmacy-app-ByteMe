@@ -60,9 +60,12 @@ def logout_view(request):
 
 @login_required
 def homepage_view(request):
+    from django.conf import settings
+    
     context = {
         'user': request.user,
-        'is_pharmacy': request.user.is_pharmacy
+        'is_pharmacy': request.user.is_pharmacy,
+        'WEBPUSH_SETTINGS': settings.WEBPUSH_SETTINGS
     }
 
     if request.user.is_pharmacy:

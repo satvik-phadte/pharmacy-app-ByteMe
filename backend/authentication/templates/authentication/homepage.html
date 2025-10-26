@@ -247,7 +247,7 @@
 <script src="{% static 'authentication/push-notifications.js' %}"></script>
 <script>
     // Initialize push notifications
-    const vapidPublicKey = "{% webpush_key %}";
+    const vapidPublicKey = "{{ WEBPUSH_SETTINGS.VAPID_PUBLIC_KEY }}";
     pushNotification.init(vapidPublicKey);
 
     function enableNotifications() {
