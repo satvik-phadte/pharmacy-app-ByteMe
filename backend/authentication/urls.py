@@ -21,6 +21,8 @@ urlpatterns = [
     # Customer routes
     path('customer/location/', views.customer_location_view, name='customer_location'),
     path('customer/search/', views.medicine_search_view, name='medicine_search'),
+    path('customer/reminders/', views.reminders_view, name='reminders'),
+    path('customer/reminders/<int:pk>/mark-taken/', views.reminder_mark_taken_today, name='reminder_mark_taken'),
     
     # API routes (no CORS)
     path('api/login/', views.api_login, name='api_login'),

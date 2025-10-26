@@ -7,9 +7,9 @@ from django.db.models import Q
 from .forms import (
     UserRegistrationForm, UserLoginForm, PharmacyLocationForm, 
     MedicineForm, InventoryForm, CustomerLocationForm, MedicineSearchForm,
-    BulkMedicineUploadForm
+    BulkMedicineUploadForm, ReminderForm
 )
-from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation
+from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder, ReminderLog
 import math
 
 def signup_view(request):
@@ -83,6 +83,15 @@ def homepage_view(request):
             context['customer_location'] = customer_location
         except CustomerLocation.DoesNotExist:
             context['customer_location'] = None
+
+        # Load active reminders for overlay
+        reminders = Reminder.objects.filter(user=request.user, active=True).order_by('medicine_name')
+        # Build 'taken today' map
+        from datetime import date
+        today = date.today()
+    taken_ids = [log.reminder_id for log in ReminderLog.objects.filter(reminder__in=reminders, date=today, taken=True)]
+    context['reminders'] = reminders
+    context['reminders_taken_today_ids'] = taken_ids
     
     return render(request, 'authentication/homepage.html', context)
 
@@ -528,3 +537,46 @@ def bulk_medicine_upload_view(request):
         form = BulkMedicineUploadForm()
     
     return render(request, 'authentication/bulk_medicine_upload.html', {'form': form})
+
+
+# --- Reminders ---
+@login_required
+def reminders_view(request):
+    if request.user.is_pharmacy:
+        messages.error(request, 'This feature is for customers only.')
+        return redirect('authentication:homepage')
+
+    if request.method == 'POST':
+        form = ReminderForm(request.POST)
+        if form.is_valid():
+            reminder = form.save(commit=False)
+            reminder.user = request.user
+            reminder.save()
+            messages.success(request, 'Reminder added!')
+            return redirect('authentication:reminders')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ReminderForm()
+
+    reminders = Reminder.objects.filter(user=request.user).order_by('-active', 'medicine_name')
+    return render(request, 'authentication/reminders.html', {
+        'form': form,
+        'reminders': reminders,
+    })
+
+
+@login_required
+def reminder_mark_taken_today(request, pk):
+    if request.user.is_pharmacy:
+        return JsonResponse({'success': False, 'message': 'Not allowed'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+    reminder = get_object_or_404(Reminder, pk=pk, user=request.user)
+    from datetime import date
+    today = date.today()
+    log, _ = ReminderLog.objects.get_or_create(reminder=reminder, date=today)
+    log.taken = True
+    log.save()
+    return JsonResponse({'success': True})

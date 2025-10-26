@@ -29,7 +29,7 @@
             
             <!-- Location Status -->
             <div class="status-card">
-                <h4>📍 Location Status</h4>
+                <h4> Location Status</h4>
                 {% if pharmacy_location %}
                     <div class="status-success">
                         <p><strong>Pharmacy:</strong> {{ pharmacy_location.name }}</p>
@@ -48,7 +48,7 @@
 
             <!-- Inventory Summary -->
             <div class="status-card">
-                <h4>📦 Inventory Summary</h4>
+                <h4> Inventory Summary</h4>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <span class="stat-number">{{ total_items }}</span>
@@ -65,28 +65,7 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h4>Quick Actions</h4>
-                <div class="action-grid">
-                    <a href="{% url 'authentication:pharmacy_location' %}" class="action-card">
-                        <span class="action-icon">📍</span>
-                        <span class="action-text">Manage Location</span>
-                    </a>
-                    <a href="{% url 'authentication:inventory_list' %}" class="action-card">
-                        <span class="action-icon">📦</span>
-                        <span class="action-text">Manage Inventory</span>
-                    </a>
-                    <a href="{% url 'authentication:inventory_add' %}" class="action-card">
-                        <span class="action-icon">➕</span>
-                        <span class="action-text">Add Medicine</span>
-                    </a>
-                    <a href="{% url 'authentication:bulk_medicine_upload' %}" class="action-card">
-                        <span class="action-icon">📂</span>
-                        <span class="action-text">Bulk Upload</span>
-                    </a>
-                </div>
-            </div>
+            
         </div>
 
     {% else %}
@@ -96,7 +75,7 @@
             
             <!-- Location Status -->
             <div class="status-card">
-                <h4>📍 Your Location</h4>
+                <h4> Your Location</h4>
                 {% if customer_location %}
                     <div class="status-success">
                         <p><strong>Address:</strong> {{ customer_location.address }}</p>
@@ -113,7 +92,7 @@
 
             <!-- Medicine Search -->
             <div class="status-card">
-                <h4>🔍 Find Medicine</h4>
+                <h4> Find Medicine</h4>
                 <p>Search for medicines in nearby pharmacies</p>
                 {% if customer_location %}
                     <a href="{% url 'authentication:medicine_search' %}" class="btn">Search Medicine</a>
@@ -122,21 +101,127 @@
                 {% endif %}
             </div>
 
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h4>Quick Actions</h4>
-                <div class="action-grid">
-                    <a href="{% url 'authentication:customer_location' %}" class="action-card">
-                        <span class="action-icon">📍</span>
-                        <span class="action-text">Set Location</span>
-                    </a>
-                    <a href="{% url 'authentication:medicine_search' %}" class="action-card">
-                        <span class="action-icon">🔍</span>
-                        <span class="action-text">Search Medicine</span>
-                    </a>
+            <!-- Reminders entry point -->
+            <div class="status-card">
+                <h4> Reminders</h4>
+                <p>Create and manage reminders so you don’t miss a dose.</p>
+                <a href="{% url 'authentication:reminders' %}" class="btn">Create / Manage Reminders</a>
+            </div>
+
+            
+        </div>
+
+        <!-- Reminders floating overlay UI -->
+        <style>
+            .fab-reminders {
+                position: fixed;
+                right: 20px;
+                top: 20px;
+                width: 56px; height: 56px;
+                border-radius: 50%;
+                border: none;
+                background: #667eea;
+                color: #fff; font-size: 22px;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+                cursor: pointer;
+                z-index: 1001;
+            }
+            .reminders-overlay {
+                position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+                display: none; align-items: center; justify-content: center;
+                z-index: 1000;
+            }
+            .reminders-modal {
+                width: min(90vw, 520px);
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 1rem;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+            }
+            .reminders-header { display:flex; align-items:center; justify-content: space-between; margin-bottom: 0.5rem; }
+            .reminders-list { max-height: 55vh; overflow:auto; }
+            .reminder-item { border:1px solid #e1e5e9; border-radius: 8px; padding: 0.75rem; margin: 0.5rem 0; display:flex; justify-content: space-between; align-items: center; }
+            .reminder-meta { color:#666; font-size: 0.9rem; }
+            .btn-small-plain { padding: 0.4rem 0.75rem; border-radius: 6px; border: none; background:#28a745; color:#fff; cursor:pointer; }
+            .btn-small-plain[disabled] { background:#9aa5b1; cursor:default; }
+            .link-manage { display:inline-block; margin-top: 0.5rem; color:#667eea; text-decoration: none; }
+        </style>
+
+        <button id="openRemindersBtn" class="fab-reminders" title="My Reminders">🔔</button>
+        <div id="remindersOverlay" class="reminders-overlay" aria-hidden="true">
+            <div class="reminders-modal" role="dialog" aria-modal="true" aria-labelledby="remindersTitle">
+                <div class="reminders-header">
+                    <h4 id="remindersTitle">My Reminders</h4>
+                    <button id="closeRemindersBtn" class="btn-small-plain" style="background:#dc3545;">Close</button>
+                </div>
+                <div class="reminder-meta">
+                    Tip: Add or edit reminders on the <a class="link-manage" href="{% url 'authentication:reminders' %}">Reminders page</a>.
+                </div>
+                <div class="reminders-list">
+                    {% if reminders %}
+                        {% for r in reminders %}
+                        <div class="reminder-item" data-reminder-id="{{ r.id }}" data-mark-url="{% url 'authentication:reminder_mark_taken' r.id %}">
+                            <div>
+                                <div><strong>{{ r.medicine_name }}</strong></div>
+                                <div class="reminder-meta">Times: {{ r.times }}{% if r.notes %} • {{ r.notes }}{% endif %}</div>
+                            </div>
+                            {% if r.id in reminders_taken_today_ids %}
+                                <button class="btn-small-plain" disabled>Taken today ✔</button>
+                            {% else %}
+                                <button class="btn-small-plain mark-taken-btn">Mark taken</button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state" style="box-shadow:none; background:#f8f9fa;">
+                            <div class="empty-icon">⏰</div>
+                            <h3>No reminders yet</h3>
+                            <p>Add your first reminder from the <a class="link-manage" href="{% url 'authentication:reminders' %}">Reminders page</a>.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
+
+        <script>
+            (function(){
+                const overlay = document.getElementById('remindersOverlay');
+                const openBtn = document.getElementById('openRemindersBtn');
+                const closeBtn = document.getElementById('closeRemindersBtn');
+
+                function openOverlay(){ overlay.style.display = 'flex'; overlay.setAttribute('aria-hidden','false'); }
+                function closeOverlay(){ overlay.style.display = 'none'; overlay.setAttribute('aria-hidden','true'); }
+
+                openBtn && openBtn.addEventListener('click', openOverlay);
+                closeBtn && closeBtn.addEventListener('click', closeOverlay);
+                overlay && overlay.addEventListener('click', function(e){ if(e.target === overlay) closeOverlay(); });
+
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) return parts.pop().split(';').shift();
+                }
+
+                document.querySelectorAll('.mark-taken-btn').forEach(btn => {
+                    btn.addEventListener('click', function(){
+                        const item = this.closest('.reminder-item');
+                        const url = item.getAttribute('data-mark-url');
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': getCookie('csrftoken') || ''
+                            }
+                        }).then(r => r.json()).then(data => {
+                            if(data && data.success){
+                                this.textContent = 'Taken today ✔';
+                                this.disabled = true;
+                            }
+                        }).catch(()=>{});
+                    });
+                });
+            })();
+        </script>
     {% endif %}
     
     <div class="btn-group">

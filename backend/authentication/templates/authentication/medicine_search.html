@@ -55,10 +55,10 @@
                     {% if result.medicine.generic_name %}
                         <p class="generic-name">{{ result.medicine.generic_name }}</p>
                     {% endif %}
-                    <p class="price">💰 {{ result.inventory_item.price }}</p>
-                    <p class="quantity">📦 Quantity: {{ result.inventory_item.quantity }}</p>
+                    <p class="price"> {{ result.inventory_item.price }}</p>
+                    <p class="quantity"> Quantity: {{ result.inventory_item.quantity }}</p>
                     {% if result.inventory_item.expiry_date %}
-                        <p class="expiry">📅 Expires: {{ result.inventory_item.expiry_date|date:"M d, Y" }}</p>
+                        <p class="expiry"> Expires: {{ result.inventory_item.expiry_date|date:"M d, Y" }}</p>
                     {% endif %}
                 </div>
                 

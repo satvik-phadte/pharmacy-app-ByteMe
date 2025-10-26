@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation
+from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder
 
 class UserRegistrationForm(UserCreationForm):
     is_pharmacy = forms.BooleanField(
@@ -114,3 +114,14 @@ class BulkMedicineUploadForm(forms.Form):
             if file.size > 5 * 1024 * 1024:  # 5MB limit
                 raise forms.ValidationError("File size must be less than 5MB")
         return file
+
+
+class ReminderForm(forms.ModelForm):
+    class Meta:
+        model = Reminder
+        fields = ['medicine_name', 'times', 'notes', 'active']
+        widgets = {
+            'medicine_name': forms.TextInput(attrs={'placeholder': 'e.g., Paracetamol 500mg'}),
+            'times': forms.TextInput(attrs={'placeholder': 'e.g., 08:00, 14:00, 20:00'}),
+            'notes': forms.TextInput(attrs={'placeholder': 'Optional notes like dosage'}),
+        }

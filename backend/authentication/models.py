@@ -61,3 +61,31 @@ class CustomerLocation(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.address}"
+
+# --- Reminders for regular users ---
+class Reminder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reminders')
+    medicine_name = models.CharField(max_length=200)
+    times = models.CharField(
+        max_length=200,
+        help_text="Comma-separated times in 24h format, e.g. 08:00, 20:00"
+    )
+    notes = models.CharField(max_length=255, blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.medicine_name} ({self.user.username})"
+
+class ReminderLog(models.Model):
+    reminder = models.ForeignKey(Reminder, on_delete=models.CASCADE, related_name='logs')
+    date = models.DateField()
+    taken = models.BooleanField(default=False)
+    marked_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('reminder', 'date')
+
+    def __str__(self):
+        return f"{self.reminder.medicine_name} - {self.date} - {'taken' if self.taken else 'pending'}"
