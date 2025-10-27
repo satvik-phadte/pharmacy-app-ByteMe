@@ -742,6 +742,19 @@
         
         .inventory-actions {
             margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* When actions are shown side-by-side, use auto width buttons */
+        .inventory-actions .btn {
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.1rem;
         }
         
         .inventory-table {
