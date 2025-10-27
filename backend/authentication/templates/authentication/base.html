@@ -197,16 +197,10 @@
             position: relative; /* create stacking context for ::before */
         }
 
+        /* The overlay created a visible rounded dark panel in some images; disable it
+           completely so the homepage shows the background image without the boxed tint. */
         .homepage-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            z-index: 0; /* sit under the content which will be z-index:1 */
-            pointer-events: none;
-            border-radius: 12px;
-            background: linear-gradient(180deg, rgba(6,21,40,0.35) 0%, rgba(11,30,48,0.28) 60%);
-            mix-blend-mode: overlay;
-            transition: opacity 220ms ease;
+            display: none !important;
         }
 
         /* Ensure child content sits above the overlay */
@@ -377,6 +371,31 @@
 
         .btn-secondary:hover {
             box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.6);
+        }
+
+        /* Compact CTA button used in the top nav (matches bulk upload / add-new style) */
+        .btn-cta {
+            display: inline-block;
+            width: auto;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #5b8fff 0%, #7c3aed 100%);
+            color: #ffffff;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(63, 81, 181, 0.18);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(63, 81, 181, 0.26);
+            opacity: 0.98;
+        }
+
+        .btn-cta:active {
+            transform: translateY(-1px);
         }
         
         .links {
@@ -1096,8 +1115,8 @@
         <div class="actions">
             {% if user.is_authenticated %}
                 {# No dedicated profile view exists; link Account to the homepage/dashboard instead #}
-                <a href="{% url 'authentication:homepage' %}" class="btn-secondary">Account</a>
-                <a href="{% url 'authentication:logout' %}" class="btn btn-danger" style="margin-left:10px;">Logout</a>
+                <a href="{% url 'authentication:homepage' %}" class="btn-secondary" style="margin-right:10px;">Account</a>
+                <a href="{% url 'authentication:logout' %}" class="btn-cta">Logout</a>
             {% else %}
                 <a href="{% url 'authentication:login' %}" class="btn">Login</a>
             {% endif %}
