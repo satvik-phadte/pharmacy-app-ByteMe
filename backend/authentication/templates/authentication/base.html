@@ -190,6 +190,31 @@
             gap: 1rem;
         }
 
+        /* Add a subtle bluish overlay on the homepage so the background retains a tint
+           while keeping content readable. This is drawn under the content using
+           a pseudo-element. */
+        .homepage-container {
+            position: relative; /* create stacking context for ::before */
+        }
+
+        .homepage-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0; /* sit under the content which will be z-index:1 */
+            pointer-events: none;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(6,21,40,0.35) 0%, rgba(11,30,48,0.28) 60%);
+            mix-blend-mode: overlay;
+            transition: opacity 220ms ease;
+        }
+
+        /* Ensure child content sits above the overlay */
+        .homepage-container > * {
+            position: relative;
+            z-index: 1;
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
