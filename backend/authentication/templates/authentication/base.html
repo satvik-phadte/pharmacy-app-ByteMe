@@ -375,23 +375,43 @@
 
         /* Compact CTA button used in the top nav (matches bulk upload / add-new style) */
         .btn-cta {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
             width: auto;
-            padding: 0.5rem 1rem;
-            background: linear-gradient(135deg, #5b8fff 0%, #7c3aed 100%);
+            padding: 0.6rem 1.1rem;
+            background: linear-gradient(135deg, #4f8bff 0%, #7c3aed 100%);
             color: #ffffff;
             border-radius: 12px;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             font-weight: 700;
             text-decoration: none;
-            box-shadow: 0 8px 24px rgba(63, 81, 181, 0.18);
+            box-shadow: 0 10px 26px rgba(63, 81, 181, 0.18);
             transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .btn-cta .cta-icon {
+            display: inline-flex;
+            width: 20px;
+            height: 20px;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+        }
+
+        .btn-cta .cta-label {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+            display: inline-block;
         }
 
         .btn-cta:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(63, 81, 181, 0.26);
-            opacity: 0.98;
+            box-shadow: 0 14px 34px rgba(63, 81, 181, 0.26);
+            opacity: 0.99;
         }
 
         .btn-cta:active {
@@ -1108,7 +1128,15 @@
             <a href="{% url 'authentication:homepage' %}">Home</a>
             <a href="{% url 'authentication:medicine_search' %}">Search</a>
             <a href="{% url 'authentication:inventory_list' %}">Inventory</a>
-            <a href="{% url 'authentication:pharmacy_location' %}">Locations</a>
+            {% if user.is_authenticated %}
+                {% if user.is_pharmacy %}
+                    <a href="{% url 'authentication:pharmacy_location' %}">Locations</a>
+                {% else %}
+                    <a href="{% url 'authentication:customer_location' %}">Locations</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'authentication:login' %}">Locations</a>
+            {% endif %}
             <a href="{% url 'authentication:reminders' %}">Reminders</a>
         </nav>
 
