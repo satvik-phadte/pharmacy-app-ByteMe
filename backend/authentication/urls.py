@@ -24,6 +24,8 @@ urlpatterns = [
     path('customer/reminders/', views.reminders_view, name='reminders'),
     path('customer/reminders/<int:pk>/mark-taken/', views.reminder_mark_taken_today, name='reminder_mark_taken'),
     path('customer/reminders/<int:pk>/delete/', views.reminder_delete_view, name='reminder_delete'),
+    path('customer/prescriptions/', views.prescriptions_view, name='prescriptions'),
+    path('customer/prescriptions/<int:pk>/delete/', views.prescription_delete_view, name='prescription_delete'),
     
     # Notification routes
     path('send-test-notification/', views.send_test_notification, name='send_test_notification'),

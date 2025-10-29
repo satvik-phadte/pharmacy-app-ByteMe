@@ -1155,6 +1155,7 @@
                 {% endif %}
                 {% if not user.is_pharmacy %}
                     <a href="{% url 'authentication:reminders' %}">Reminders</a>
+                    <a href="{% url 'authentication:prescriptions' %}">Prescriptions</a>
                 {% endif %}
             {% else %}
                 <a href="{% url 'authentication:medicine_search' %}">Search</a>

@@ -106,3 +106,16 @@ class ReminderLog(models.Model):
 
     def __str__(self):
         return f"{self.reminder.medicine_name} - {self.date} - {'taken' if self.taken else 'pending'}"
+
+# --- Prescription Upload for regular users ---
+class Prescription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescriptions')
+    image = models.ImageField(upload_to='prescriptions/%Y/%m/%d/')
+    notes = models.TextField(blank=True, help_text="Additional notes about the prescription")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Prescription by {self.user.username} - {self.uploaded_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    class Meta:
+        ordering = ['-uploaded_at']
