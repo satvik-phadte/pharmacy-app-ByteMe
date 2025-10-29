@@ -669,7 +669,7 @@ def prescription_extract_text_view(request, pk):
     try:
         import google.generativeai as genai
         from django.conf import settings
-        import os
+        from PIL import Image
         
         # Configure Gemini API
         if not settings.GEMINI_API_KEY:
@@ -677,14 +677,12 @@ def prescription_extract_text_view(request, pk):
         
         genai.configure(api_key=settings.GEMINI_API_KEY)
         
-        # Get the image file path
+        # Get the image file path and open it
         image_path = prescription.image.path
+        img = Image.open(image_path)
         
-        # Upload image to Gemini
-        uploaded_file = genai.upload_file(image_path)
-        
-        # Create model and generate content
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Create model - using gemini-pro-vision or gemini-1.5-pro
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         prompt = """
         Extract all text from this medical prescription image. 
@@ -699,22 +697,21 @@ def prescription_extract_text_view(request, pk):
         Format the output clearly with proper labels.
         """
         
-        response = model.generate_content([prompt, uploaded_file])
+        response = model.generate_content([prompt, img])
         extracted_text = response.text
         
         # Save extracted text to database
         prescription.extracted_text = extracted_text
         prescription.save()
         
-        # Delete the uploaded file from Gemini
-        genai.delete_file(uploaded_file.name)
-        
         return JsonResponse({'success': True, 'extracted_text': extracted_text})
         
-    except ImportError:
-        return JsonResponse({'success': False, 'error': 'google-generativeai package not installed. Run: pip install google-generativeai'})
+    except ImportError as ie:
+        missing_package = str(ie).split("'")[1] if "'" in str(ie) else "required package"
+        return JsonResponse({'success': False, 'error': f'{missing_package} not installed. Run: pip install {missing_package}'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Error extracting text: {str(e)}'})
+
 
 
 # --- Push Notification Helpers ---
