@@ -73,7 +73,7 @@ class InventoryForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make medicine field not required since we can create new ones
+        
         self.fields['medicine'].required = False
         self.fields['medicine'].help_text = "Select an existing medicine or create a new one below"
 

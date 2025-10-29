@@ -162,7 +162,7 @@ def inventory_add_view(request):
             new_medicine_generic = form.cleaned_data.get('new_medicine_generic')
             
             if new_medicine_name:
-                # Create new medicine
+                
                 medicine, created = Medicine.objects.get_or_create(
                     name=new_medicine_name,
                     defaults={
@@ -174,7 +174,7 @@ def inventory_add_view(request):
                 if created:
                     messages.success(request, f'New medicine "{new_medicine_name}" created successfully!')
             else:
-                # Use existing medicine
+                
                 medicine = form.cleaned_data.get('medicine')
                 if not medicine:
                     messages.error(request, 'Please select an existing medicine or enter a new medicine name.')
@@ -183,7 +183,7 @@ def inventory_add_view(request):
                         'title': 'Add Inventory Item'
                     })
             
-            # Create inventory item
+            
             inventory = form.save(commit=False)
             inventory.pharmacy = request.user
             inventory.medicine = medicine
@@ -209,7 +209,7 @@ def inventory_edit_view(request, pk):
     if request.method == 'POST':
         form = InventoryForm(request.POST, instance=inventory_item)
         if form.is_valid():
-            # For editing, we'll use the existing medicine
+            
             form.save()
             messages.success(request, 'Inventory item updated successfully!')
             return redirect('authentication:inventory_list')
@@ -239,7 +239,7 @@ def inventory_delete_view(request, pk):
         'inventory_item': inventory_item
     })
 
-# Customer Location Management
+
 @login_required
 def customer_location_view(request):
     if request.user.is_pharmacy:
@@ -281,11 +281,11 @@ def medicine_search_view(request):
         medicine_name = form.cleaned_data['medicine_name']
         max_distance = form.cleaned_data['max_distance']
         
-        # Get customer location
+        
         try:
             customer_location = request.user.customer_location
             if customer_location:
-                # Search for medicine in nearby pharmacies
+                
                 search_results = search_medicine_nearby(
                     medicine_name, 
                     customer_location.latitude, 
@@ -306,7 +306,7 @@ def search_medicine_nearby(medicine_name, lat, lng, max_distance):
     """Search for medicine in nearby pharmacies"""
     # Simple distance calculation (Haversine formula)
     def calculate_distance(lat1, lng1, lat2, lng2):
-        R = 6371  # Earth's radius in kilometers
+        R = 6371  
         
         lat1, lng1, lat2, lng2 = map(math.radians, [lat1, lng1, lat2, lng2])
         dlat = lat2 - lat1
@@ -657,7 +657,7 @@ def notify_low_stock_items(pharmacy_user):
         
         send_push_notification(
             user=pharmacy_user,
-            title='⚠️ Low Stock Alert',
+            title=' Low Stock Alert',
             body=f'Low stock: {item_names}{more}',
             url='/auth/pharmacy/inventory/'
         )
@@ -674,7 +674,7 @@ def notify_expiring_items(pharmacy_user):
         
         send_push_notification(
             user=pharmacy_user,
-            title='⏰ Expiry Warning',
+            title=' Expiry Warning',
             body=f'Expiring soon: {item_names}{more}',
             url='/auth/pharmacy/inventory/'
         )
@@ -684,7 +684,7 @@ def notify_medicine_reminder(user, reminder):
     """Send notification for medicine reminder to customer"""
     send_push_notification(
         user=user,
-        title=f'💊 Medicine Reminder',
+        title=f' Medicine Reminder',
         body=f'Time to take your medicine: {reminder.medicine_name}',
         url='/auth/homepage/'
     )

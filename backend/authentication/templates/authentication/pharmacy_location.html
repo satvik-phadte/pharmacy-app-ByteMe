@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="header">
-    <h1>📍 Pharmacy Location</h1>
+    <h1> Pharmacy Location</h1>
     <p>Set your pharmacy location on the map</p>
 </div>
 
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get current location
     document.getElementById('getCurrentLocation').addEventListener('click', function() {
         if (navigator.geolocation) {
-            this.textContent = '📍 Getting location...';
+            this.textContent = ' Getting location...';
             this.disabled = true;
             
             navigator.geolocation.getCurrentPosition(function(position) {

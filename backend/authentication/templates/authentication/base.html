@@ -504,9 +504,43 @@
             width: 100%;
         }
         
+        /* Make location pages use more of the viewport: two-column layout with
+           form on the left and map / map-controls on the right. Falls back to a
+           single column on small screens. */
         .location-container {
-            max-width: 1000px;
+            max-width: none;
             width: 100%;
+            padding: 0; /* remove extra centering padding so content can span */
+            display: grid;
+            grid-template-columns: 1fr 520px; /* main form + map column */
+            gap: 32px;
+            align-items: start;
+            margin: 0 auto;
+            max-width: 1400px; /* limit extremely wide layouts */
+        }
+
+        /* The main form will live in the first column; ensure it stretches */
+        .location-container form#locationForm {
+            width: 100%;
+            display: block;
+        }
+
+        /* Put the map group into the right column when present */
+        .location-container .map-group {
+            grid-column: 2;
+            align-self: start;
+        }
+
+        /* All other form groups remain in the left column */
+        .location-container .form-group:not(.map-group) {
+            grid-column: 1;
+        }
+
+        /* Make header span both columns on wide screens */
+        .location-container > .header {
+            grid-column: 1 / -1;
+            text-align: left;
+            padding: 0 0 8px 0;
         }
         
         .welcome-card {
@@ -1020,7 +1054,10 @@
         
         /* Map Styles */
         #map {
-            height: 450px;
+            /* on large screens allow the map to grow to use more vertical space */
+            min-height: 480px;
+            height: calc(100vh - 260px);
+            max-height: 900px;
             border-radius: 16px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             margin: 1.5rem 0;
@@ -1125,6 +1162,25 @@
 
             .btn-group .btn {
                 width: 100%;
+            }
+            /* Make location pages stack on small screens */
+            .location-container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 0 8px;
+            }
+
+            .location-container .map-group {
+                grid-column: 1;
+            }
+
+            #map {
+                height: 450px;
+                min-height: 360px;
+                max-height: none;
+            }
+            .location-container > .header {
+                text-align: center;
             }
         }
 
