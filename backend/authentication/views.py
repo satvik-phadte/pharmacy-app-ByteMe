@@ -658,6 +658,65 @@ def prescription_delete_view(request, pk):
     return redirect('authentication:prescriptions')
 
 
+@login_required
+def prescription_extract_text_view(request, pk):
+    """Extract text from prescription image using Google Gemini OCR"""
+    if request.user.is_pharmacy:
+        return JsonResponse({'success': False, 'error': 'This feature is for customers only.'})
+    
+    prescription = get_object_or_404(Prescription, pk=pk, user=request.user)
+    
+    try:
+        import google.generativeai as genai
+        from django.conf import settings
+        import os
+        
+        # Configure Gemini API
+        if not settings.GEMINI_API_KEY:
+            return JsonResponse({'success': False, 'error': 'Gemini API key not configured. Please add your API key to settings.py'})
+        
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        
+        # Get the image file path
+        image_path = prescription.image.path
+        
+        # Upload image to Gemini
+        uploaded_file = genai.upload_file(image_path)
+        
+        # Create model and generate content
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        prompt = """
+        Extract all text from this medical prescription image. 
+        Please provide:
+        1. Medicine names
+        2. Dosages
+        3. Instructions for use
+        4. Duration
+        5. Doctor's name (if visible)
+        6. Any other important information
+        
+        Format the output clearly with proper labels.
+        """
+        
+        response = model.generate_content([prompt, uploaded_file])
+        extracted_text = response.text
+        
+        # Save extracted text to database
+        prescription.extracted_text = extracted_text
+        prescription.save()
+        
+        # Delete the uploaded file from Gemini
+        genai.delete_file(uploaded_file.name)
+        
+        return JsonResponse({'success': True, 'extracted_text': extracted_text})
+        
+    except ImportError:
+        return JsonResponse({'success': False, 'error': 'google-generativeai package not installed. Run: pip install google-generativeai'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error extracting text: {str(e)}'})
+
+
 # --- Push Notification Helpers ---
 def send_push_notification(user, title, body, url='/'):
     """Helper function to send push notification to a user"""

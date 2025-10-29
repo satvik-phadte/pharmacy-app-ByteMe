@@ -85,6 +85,30 @@
                 </p>
                 {% endif %}
                 
+                <!-- Extracted Text -->
+                {% if prescription.extracted_text %}
+                <div style="background: rgba(102, 126, 234, 0.1); border-left: 3px solid #667eea; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">📋 Extracted Text:</p>
+                    <p id="extracted-text-{{ prescription.pk }}" style="color: rgba(255, 255, 255, 0.75); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{{ prescription.extracted_text }}</p>
+                </div>
+                {% else %}
+                <div id="extracted-text-container-{{ prescription.pk }}" style="display: none; background: rgba(102, 126, 234, 0.1); border-left: 3px solid #667eea; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">📋 Extracted Text:</p>
+                    <p id="extracted-text-{{ prescription.pk }}" style="color: rgba(255, 255, 255, 0.75); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; max-height: 150px; overflow-y: auto;"></p>
+                </div>
+                {% endif %}
+                
+                <!-- Extract Text Button -->
+                {% if not prescription.extracted_text %}
+                <button onclick="extractText({{ prescription.pk }})" id="extract-btn-{{ prescription.pk }}" class="btn" style="width: 100%; margin-bottom: 0.5rem; font-size: 0.85rem; padding: 0.6rem 1rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline; margin-right: 0.3rem;">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Extract Text with AI
+                </button>
+                {% endif %}
+                
                 <!-- Delete Button -->
                 <form method="post" action="{% url 'authentication:prescription_delete' prescription.pk %}" onsubmit="return confirm('Are you sure you want to delete this prescription?');" style="margin-top: 1rem;">
                     {% csrf_token %}
@@ -115,4 +139,80 @@
 <div class="links">
     <a href="{% url 'authentication:homepage' %}">← Back to Homepage</a>
 </div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function extractText(prescriptionId) {
+    const button = document.getElementById(`extract-btn-${prescriptionId}`);
+    const originalContent = button.innerHTML;
+    
+    // Disable button and show loading
+    button.disabled = true;
+    button.style.opacity = '0.6';
+    button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline; margin-right: 0.3rem; animation: spin 1s linear infinite;">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="8"/>
+        </svg>
+        Extracting...
+    `;
+    
+    try {
+        const response = await fetch(`/auth/customer/prescriptions/${prescriptionId}/extract-text/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show extracted text
+            const container = document.getElementById(`extracted-text-container-${prescriptionId}`);
+            const textElement = document.getElementById(`extracted-text-${prescriptionId}`);
+            textElement.textContent = data.extracted_text;
+            container.style.display = 'block';
+            
+            // Hide the extract button
+            button.style.display = 'none';
+            
+            // Show success message
+            alert('✅ Text extracted successfully!');
+        } else {
+            alert('❌ Error: ' + data.error);
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.innerHTML = originalContent;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Failed to extract text. Please try again.');
+        button.disabled = false;
+        button.style.opacity = '1';
+        button.innerHTML = originalContent;
+    }
+}
+</script>
+
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
 {% endblock %}

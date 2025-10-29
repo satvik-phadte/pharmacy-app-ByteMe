@@ -112,6 +112,7 @@ class Prescription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescriptions')
     image = models.ImageField(upload_to='prescriptions/%Y/%m/%d/')
     notes = models.TextField(blank=True, help_text="Additional notes about the prescription")
+    extracted_text = models.TextField(blank=True, help_text="Text extracted from prescription image using OCR")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
