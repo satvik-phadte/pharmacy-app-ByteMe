@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="header">
-    <h1>📄 My Prescriptions</h1>
+    <h1> My Prescriptions</h1>
     <p>Upload and manage your prescription images</p>
 </div>
 
@@ -55,7 +55,7 @@
 <div style="margin-bottom: 2rem;">
     <h3 style="color: rgba(255, 255, 255, 0.95); margin-bottom: 1.5rem;">Your Prescriptions ({{ prescriptions|length }})</h3>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div class="prescriptions-grid">
         {% for prescription in prescriptions %}
         <div style="background: #071533; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 12px; overflow: hidden; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 40px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
             <!-- Image -->
@@ -112,7 +112,7 @@
                 <!-- Delete Button -->
                 <form method="post" action="{% url 'authentication:prescription_delete' prescription.pk %}" onsubmit="return confirm('Are you sure you want to delete this prescription?');" style="margin-top: 1rem;">
                     {% csrf_token %}
-                    <button type="submit" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; width: 100%; transition: all 0.2s;">
+                    <button type="submit" class="btn" style="width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline; margin-right: 0.3rem;">
                             <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -210,6 +210,24 @@ async function extractText(prescriptionId) {
 </script>
 
 <style>
+.prescriptions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .prescriptions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .prescriptions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }

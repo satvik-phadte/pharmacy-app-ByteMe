@@ -681,8 +681,8 @@ def prescription_extract_text_view(request, pk):
         image_path = prescription.image.path
         img = Image.open(image_path)
         
-        # Create model - using gemini-pro-vision or gemini-1.5-pro
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        # Create model - using gemini-2.0-flash which supports vision
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
         prompt = """
         Extract all text from this medical prescription image. 
