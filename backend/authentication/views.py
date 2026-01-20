@@ -8,9 +8,9 @@ from webpush import send_user_notification
 from .forms import (
     UserRegistrationForm, UserLoginForm, PharmacyLocationForm, 
     MedicineForm, InventoryForm, CustomerLocationForm, MedicineSearchForm,
-    BulkMedicineUploadForm, ReminderForm
+    BulkMedicineUploadForm, ReminderForm, PrescriptionUploadForm
 )
-from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder, ReminderLog
+from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder, ReminderLog, Prescription
 import math
 
 def signup_view(request):
@@ -162,7 +162,7 @@ def inventory_add_view(request):
             new_medicine_generic = form.cleaned_data.get('new_medicine_generic')
             
             if new_medicine_name:
-                
+                # Create new medicine
                 medicine, created = Medicine.objects.get_or_create(
                     name=new_medicine_name,
                     defaults={
@@ -174,7 +174,7 @@ def inventory_add_view(request):
                 if created:
                     messages.success(request, f'New medicine "{new_medicine_name}" created successfully!')
             else:
-                
+                # Use existing medicine
                 medicine = form.cleaned_data.get('medicine')
                 if not medicine:
                     messages.error(request, 'Please select an existing medicine or enter a new medicine name.')
@@ -183,7 +183,7 @@ def inventory_add_view(request):
                         'title': 'Add Inventory Item'
                     })
             
-            
+            # Create inventory item
             inventory = form.save(commit=False)
             inventory.pharmacy = request.user
             inventory.medicine = medicine
@@ -209,7 +209,7 @@ def inventory_edit_view(request, pk):
     if request.method == 'POST':
         form = InventoryForm(request.POST, instance=inventory_item)
         if form.is_valid():
-            
+            # For editing, we'll use the existing medicine
             form.save()
             messages.success(request, 'Inventory item updated successfully!')
             return redirect('authentication:inventory_list')
@@ -239,7 +239,7 @@ def inventory_delete_view(request, pk):
         'inventory_item': inventory_item
     })
 
-
+# Customer Location Management
 @login_required
 def customer_location_view(request):
     if request.user.is_pharmacy:
@@ -281,11 +281,11 @@ def medicine_search_view(request):
         medicine_name = form.cleaned_data['medicine_name']
         max_distance = form.cleaned_data['max_distance']
         
-        
+        # Get customer location
         try:
             customer_location = request.user.customer_location
             if customer_location:
-                
+                # Search for medicine in nearby pharmacies
                 search_results = search_medicine_nearby(
                     medicine_name, 
                     customer_location.latitude, 
@@ -306,7 +306,7 @@ def search_medicine_nearby(medicine_name, lat, lng, max_distance):
     """Search for medicine in nearby pharmacies"""
     # Simple distance calculation (Haversine formula)
     def calculate_distance(lat1, lng1, lat2, lng2):
-        R = 6371  
+        R = 6371  # Earth's radius in kilometers
         
         lat1, lng1, lat2, lng2 = map(math.radians, [lat1, lng1, lat2, lng2])
         dlat = lat2 - lat1
@@ -612,6 +612,108 @@ def reminder_delete_view(request, pk):
     return redirect('authentication:reminders')
 
 
+# --- Prescription Upload Views ---
+@login_required
+def prescriptions_view(request):
+    """View and upload prescriptions for regular users"""
+    if request.user.is_pharmacy:
+        messages.error(request, 'This feature is for customers only.')
+        return redirect('authentication:homepage')
+    
+    if request.method == 'POST':
+        form = PrescriptionUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            prescription = form.save(commit=False)
+            prescription.user = request.user
+            prescription.save()
+            messages.success(request, 'Prescription uploaded successfully!')
+            return redirect('authentication:prescriptions')
+    else:
+        form = PrescriptionUploadForm()
+    
+    prescriptions = Prescription.objects.filter(user=request.user)
+    
+    context = {
+        'form': form,
+        'prescriptions': prescriptions,
+    }
+    return render(request, 'authentication/prescriptions.html', context)
+
+
+@login_required
+def prescription_delete_view(request, pk):
+    """Delete a prescription owned by the current user"""
+    if request.user.is_pharmacy:
+        messages.error(request, 'This feature is for customers only.')
+        return redirect('authentication:homepage')
+    
+    prescription = get_object_or_404(Prescription, pk=pk, user=request.user)
+    if request.method == 'POST':
+        prescription.image.delete()  # Delete the image file
+        prescription.delete()
+        messages.success(request, 'Prescription deleted successfully.')
+        return redirect('authentication:prescriptions')
+    
+    messages.info(request, 'Deletion cancelled.')
+    return redirect('authentication:prescriptions')
+
+
+@login_required
+def prescription_extract_text_view(request, pk):
+    """Extract text from prescription image using Google Gemini OCR"""
+    if request.user.is_pharmacy:
+        return JsonResponse({'success': False, 'error': 'This feature is for customers only.'})
+    
+    prescription = get_object_or_404(Prescription, pk=pk, user=request.user)
+    
+    try:
+        import google.generativeai as genai
+        from django.conf import settings
+        from PIL import Image
+        
+        # Configure Gemini API
+        if not settings.GEMINI_API_KEY:
+            return JsonResponse({'success': False, 'error': 'Gemini API key not configured. Please add your API key to settings.py'})
+        
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        
+        # Get the image file path and open it
+        image_path = prescription.image.path
+        img = Image.open(image_path)
+        
+        # Create model - using gemini-2.0-flash which supports vision
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        prompt = """
+        Extract all text from this medical prescription image. 
+        Please provide:
+        1. Medicine names
+        2. Dosages
+        3. Instructions for use
+        4. Duration
+        5. Doctor's name (if visible)
+        6. Any other important information
+        
+        Format the output clearly with proper labels.
+        """
+        
+        response = model.generate_content([prompt, img])
+        extracted_text = response.text
+        
+        # Save extracted text to database
+        prescription.extracted_text = extracted_text
+        prescription.save()
+        
+        return JsonResponse({'success': True, 'extracted_text': extracted_text})
+        
+    except ImportError as ie:
+        missing_package = str(ie).split("'")[1] if "'" in str(ie) else "required package"
+        return JsonResponse({'success': False, 'error': f'{missing_package} not installed. Run: pip install {missing_package}'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error extracting text: {str(e)}'})
+
+
+
 # --- Push Notification Helpers ---
 def send_push_notification(user, title, body, url='/'):
     """Helper function to send push notification to a user"""
@@ -657,7 +759,7 @@ def notify_low_stock_items(pharmacy_user):
         
         send_push_notification(
             user=pharmacy_user,
-            title=' Low Stock Alert',
+            title='⚠️ Low Stock Alert',
             body=f'Low stock: {item_names}{more}',
             url='/auth/pharmacy/inventory/'
         )
@@ -674,7 +776,7 @@ def notify_expiring_items(pharmacy_user):
         
         send_push_notification(
             user=pharmacy_user,
-            title=' Expiry Warning',
+            title='⏰ Expiry Warning',
             body=f'Expiring soon: {item_names}{more}',
             url='/auth/pharmacy/inventory/'
         )
@@ -684,7 +786,7 @@ def notify_medicine_reminder(user, reminder):
     """Send notification for medicine reminder to customer"""
     send_push_notification(
         user=user,
-        title=f' Medicine Reminder',
+        title=f'💊 Medicine Reminder',
         body=f'Time to take your medicine: {reminder.medicine_name}',
         url='/auth/homepage/'
     )

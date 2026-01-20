@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder
+from .models import User, PharmacyLocation, Medicine, Inventory, CustomerLocation, Reminder, Prescription
 
 class UserRegistrationForm(UserCreationForm):
     phone_number = forms.CharField(
@@ -73,7 +73,7 @@ class InventoryForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+        # Make medicine field not required since we can create new ones
         self.fields['medicine'].required = False
         self.fields['medicine'].help_text = "Select an existing medicine or create a new one below"
 
@@ -132,3 +132,31 @@ class ReminderForm(forms.ModelForm):
             'times': forms.TextInput(attrs={'placeholder': 'e.g., 08:00, 14:00, 20:00'}),
             'notes': forms.TextInput(attrs={'placeholder': 'Optional notes like dosage'}),
         }
+
+
+class PrescriptionUploadForm(forms.ModelForm):
+    class Meta:
+        model = Prescription
+        fields = ['image', 'notes']
+        widgets = {
+            'image': forms.FileInput(attrs={
+                'accept': 'image/*',
+                'class': 'form-control'
+            }),
+            'notes': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Add any notes about this prescription (optional)',
+                'class': 'form-control'
+            }),
+        }
+    
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            # Check file size (max 5MB)
+            if image.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("Image file size must be less than 5MB")
+            # Check file type
+            if not image.content_type.startswith('image/'):
+                raise forms.ValidationError("Please upload a valid image file")
+        return image

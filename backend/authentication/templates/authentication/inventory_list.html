@@ -11,8 +11,15 @@
 </div>
 
 <div class="inventory-actions">
-    <a href="{% url 'authentication:inventory_add' %}" class="btn">➕ Add New Item</a>
-    <a href="{% url 'authentication:bulk_medicine_upload' %}" class="btn">📂 Bulk Upload</a>
+    <a href="{% url 'authentication:bulk_medicine_upload' %}" class="btn-cta">
+        <span class="cta-icon" aria-hidden="true">
+            <!-- folder SVG -->
+            <svg width="20" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" fill="rgba(255,255,255,0.95)"/>
+            </svg>
+        </span>
+        <span class="cta-label">Add Items</span>
+    </a>
 </div>
 
 {% if inventory_items %}

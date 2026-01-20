@@ -143,7 +143,7 @@
             box-shadow: none;
             padding: 40px 24px; /* page padding */
             width: 100%;
-            max-width: 1200px;
+            max-width: 1600px; /* increased from 1200px */
             margin: 0 auto; /* center horizontally */
             position: relative;
             z-index: 1;
@@ -402,9 +402,6 @@
         }
 
         .btn-cta .cta-label {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
             display: inline-block;
         }
 
@@ -504,43 +501,9 @@
             width: 100%;
         }
         
-        /* Make location pages use more of the viewport: two-column layout with
-           form on the left and map / map-controls on the right. Falls back to a
-           single column on small screens. */
         .location-container {
-            max-width: none;
+            max-width: 1000px;
             width: 100%;
-            padding: 0; /* remove extra centering padding so content can span */
-            display: grid;
-            grid-template-columns: 1fr 520px; /* main form + map column */
-            gap: 32px;
-            align-items: start;
-            margin: 0 auto;
-            max-width: 1400px; /* limit extremely wide layouts */
-        }
-
-        /* The main form will live in the first column; ensure it stretches */
-        .location-container form#locationForm {
-            width: 100%;
-            display: block;
-        }
-
-        /* Put the map group into the right column when present */
-        .location-container .map-group {
-            grid-column: 2;
-            align-self: start;
-        }
-
-        /* All other form groups remain in the left column */
-        .location-container .form-group:not(.map-group) {
-            grid-column: 1;
-        }
-
-        /* Make header span both columns on wide screens */
-        .location-container > .header {
-            grid-column: 1 / -1;
-            text-align: left;
-            padding: 0 0 8px 0;
         }
         
         .welcome-card {
@@ -776,19 +739,6 @@
         
         .inventory-actions {
             margin-bottom: 2rem;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        /* When actions are shown side-by-side, use auto width buttons */
-        .inventory-actions .btn {
-            width: auto;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.6rem 1.1rem;
         }
         
         .inventory-table {
@@ -908,7 +858,8 @@
         
         /* Search styles */
         .search-container {
-            max-width: 1400px;
+            max-width: 100%;
+            padding: 40px 80px;
         }
         
         .search-form {
@@ -918,6 +869,7 @@
             border-radius: 12px;
             box-shadow: 0 6px 22px rgba(2, 6, 23, 0.6);
             margin-bottom: 2rem;
+            max-width: 600px;
         }
         
         .search-results h3 {
@@ -928,8 +880,21 @@
         
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.8rem;
+            width: 100%;
+        }
+        
+        @media (max-width: 1400px) {
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .result-card {
@@ -1054,10 +1019,7 @@
         
         /* Map Styles */
         #map {
-            /* on large screens allow the map to grow to use more vertical space */
-            min-height: 480px;
-            height: calc(100vh - 260px);
-            max-height: 900px;
+            height: 450px;
             border-radius: 16px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             margin: 1.5rem 0;
@@ -1163,25 +1125,6 @@
             .btn-group .btn {
                 width: 100%;
             }
-            /* Make location pages stack on small screens */
-            .location-container {
-                grid-template-columns: 1fr;
-                gap: 16px;
-                padding: 0 8px;
-            }
-
-            .location-container .map-group {
-                grid-column: 1;
-            }
-
-            #map {
-                height: 450px;
-                min-height: 360px;
-                max-height: none;
-            }
-            .location-container > .header {
-                text-align: center;
-            }
         }
 
     </style>
@@ -1195,18 +1138,28 @@
 
         <nav class="nav-links" aria-label="Primary Navigation">
             <a href="{% url 'authentication:homepage' %}">Home</a>
-            <a href="{% url 'authentication:medicine_search' %}">Search</a>
-            <a href="{% url 'authentication:inventory_list' %}">Inventory</a>
             {% if user.is_authenticated %}
+                {% if not user.is_pharmacy %}
+                    <a href="{% url 'authentication:medicine_search' %}">Search</a>
+                {% endif %}
+                {% if user.is_pharmacy %}
+                    <a href="{% url 'authentication:inventory_list' %}">Inventory</a>
+                {% endif %}
                 {% if user.is_pharmacy %}
                     <a href="{% url 'authentication:pharmacy_location' %}">Locations</a>
                 {% else %}
                     <a href="{% url 'authentication:customer_location' %}">Locations</a>
                 {% endif %}
+                {% if not user.is_pharmacy %}
+                    <a href="{% url 'authentication:reminders' %}">Reminders</a>
+                    <a href="{% url 'authentication:prescriptions' %}">Prescriptions</a>
+                {% endif %}
             {% else %}
+                <a href="{% url 'authentication:medicine_search' %}">Search</a>
+                <a href="{% url 'authentication:login' %}">Inventory</a>
                 <a href="{% url 'authentication:login' %}">Locations</a>
+                <a href="{% url 'authentication:reminders' %}">Reminders</a>
             {% endif %}
-            <a href="{% url 'authentication:reminders' %}">Reminders</a>
         </nav>
 
         <div class="actions">

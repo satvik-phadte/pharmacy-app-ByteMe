@@ -25,6 +25,8 @@ https://github.com/AYUSH22032004
 -  **Contact Information**: Get pharmacy contact details and directions
 -  **Distance Calculation**: See how far each pharmacy is from your location
  -  **Reminders**: Create medicine reminders and get in-app/browser notifications
+ -  **Prescription Upload**: Upload prescription images with AI-powered text extraction
+ -  **OCR Text Extraction**: Use Google Gemini AI to extract medicine details from prescriptions
 
 ## Technology Stack
 
@@ -32,6 +34,7 @@ https://github.com/AYUSH22032004
 - **Database**: SQLite (default)
 - **Frontend**: HTML, CSS, JavaScript
 - **Notifications**: Web Push (django-webpush + Service Worker)
+- **AI/OCR**: Google Gemini API for prescription text extraction
 - **Authentication**: Django's built-in authentication system
 
 ## Project Structure
@@ -83,8 +86,19 @@ source venv/bin/activate
 ### Step 3: Install Dependencies
 ```bash
 cd backend
+pip install -r requirements.txt
+# Or install manually:
 pip install django
 pip install django-webpush py-vapid  # for browser push notifications
+pip install google-generativeai  # for AI OCR text extraction
+```
+
+### Step 3.5: Configure Gemini API Key
+Get your free API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+Then add it to `backend/pharmacy_backend/settings.py`:
+```python
+GEMINI_API_KEY = 'your-api-key-here'
 ```
 
 ### Step 4: Run Database Migrations
@@ -198,6 +212,18 @@ The app uses the Haversine formula to calculate distances between customer and p
 - Optional browser push notifications (desktop/mobile) for:
    - Customer reminders
    - Pharmacy low-stock and expiry alerts
+
+### Prescription OCR (AI Text Extraction)
+- Upload prescription images (JPG, PNG, HEIC - max 5MB)
+- AI-powered text extraction using Google Gemini
+- Automatically extracts:
+   - Medicine names
+   - Dosages
+   - Instructions for use
+   - Duration
+   - Doctor's name (if visible)
+- View extracted text directly on prescription cards
+- Helps customers keep digital records of their prescriptions
 
 ## Browser Push Notifications (Web Push)
 
