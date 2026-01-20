@@ -142,4 +142,4 @@ WEBPUSH_SETTINGS = {
 
 # Google Gemini API Configuration
 # Get your API key from: https://makersuite.google.com/app/apikey
-GEMINI_API_KEY = 'AIzaSyDd7VWeFUUvFio5iYfl1ur6tPid5jyy1P8'  # Add your Gemini API key here
+GEMINI_API_KEY = ''  # Add your Gemini API key here
